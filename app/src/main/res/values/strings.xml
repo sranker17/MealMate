@@ -1,3 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MealMate</string>
+
+    <!-- Navigation -->
+    <string name="nav_planner">Tervező</string>
+    <string name="nav_meals">Ételek</string>
+    <string name="nav_history">Előzmények</string>
+    <string name="nav_settings">Beállítások</string>
+
+    <!-- Planner Screen -->
+    <string name="planner_title">Heti Tervező</string>
+    <string name="planner_empty_title">Még nincs étel az adatbázisban</string>
+    <string name="planner_empty_message">Adj hozzá ételeket az Ételek menüpontban, hogy elkezdhesd a tervezést!</string>
+    <string name="planner_recommend">Ajánlás</string>
+    <string name="planner_pin">Kitűzés</string>
+    <string name="planner_unpin">Kitűzés visszavonása</string>
+    <string name="planner_skip">Kihagyás</string>
+    <string name="planner_accept_menu">Menü elfogadása</string>
+    <string name="planner_finish_menu">Menü befejezése</string>
+    <string name="planner_no_recommendation">Nincs megjeleníthető ajánlás</string>
+    <string name="planner_filter">Szűrők</string>
+    <string name="planner_pinned_meals">Kitűzött ételek</string>
+    <string name="planner_meal_cooked">Elkészítve</string>
+
+    <!-- Meal List Screen -->
+    <string name="meal_list_title">Ételek</string>
+    <string name="meal_list_search_hint">Keresés…</string>
+    <string name="meal_list_empty">Nincs még étel hozzáadva</string>
+    <string name="meal_list_add">Hozzáadás</string>
+
+    <!-- Meal Detail Screen -->
+    <string name="meal_detail_title">Étel Részletei</string>
+    <string name="meal_detail_recipe">Recept</string>
+    <string name="meal_detail_ingredients">Hozzávalók</string>
+    <string name="meal_detail_tags">Címkék</string>
+    <string name="meal_detail_serving_size">Adag</string>
+    <string name="meal_detail_source">Forrás</string>
+    <string name="meal_detail_times_cooked">Főzések száma</string>
+    <string name="meal_detail_times_skipped">Kihagyások száma</string>
+    <string name="meal_detail_edit">Szerkesztés</string>
+    <string name="meal_detail_delete">Törlés</string>
+    <string name="meal_detail_delete_confirm">Biztosan törlöd ezt az ételt?</string>
+
+    <!-- Meal Edit Screen -->
+    <string name="meal_edit_title_new">Új étel</string>
+    <string name="meal_edit_title_edit">Étel szerkesztése</string>
+    <string name="meal_edit_name_label">Név</string>
+    <string name="meal_edit_name_hint">Pl. Csirkepaprikás</string>
+    <string name="meal_edit_recipe_label">Recept</string>
+    <string name="meal_edit_recipe_hint">Elkészítési útmutató…</string>
+    <string name="meal_edit_ingredients_label">Hozzávalók</string>
+    <string name="meal_edit_ingredient_hint">Új hozzávaló…</string>
+    <string name="meal_edit_serving_size">Adag (fő)</string>
+    <string name="meal_edit_source_label">Forrás link</string>
+    <string name="meal_edit_source_hint">https://…</string>
+    <string name="meal_edit_tags_label">Címkék</string>
+    <string name="meal_edit_save">Mentés</string>
+    <string name="meal_edit_name_required">A név megadása kötelező</string>
+
+    <!-- Tag Management -->
+    <string name="tag_manage_title">Címkék kezelése</string>
+    <string name="tag_manage_add_hint">Új címke…</string>
+    <string name="tag_manage_add">Hozzáadás</string>
+
+    <!-- Menu History -->
+    <string name="history_title">Előzmények</string>
+    <string name="history_empty">Még nincs befejezett menü</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Beállítások</string>
+    <string name="settings_cooldown">Lehűlés (menük száma)</string>
+    <string name="settings_cooldown_description">Ennyi menünek kell eltelnie, mielőtt egy étel újra ajánlható</string>
+    <string name="settings_reset_cooldowns">Lehűlések visszaállítása</string>
+    <string name="settings_reset_cooldowns_confirm">Biztosan visszaállítod az összes étel lehűlését?</string>
+    <string name="settings_dark_theme">Sötét téma</string>
+    <string name="settings_font_size">Betűméret</string>
+    <string name="settings_font_size_small">Kicsi</string>
+    <string name="settings_font_size_medium">Közepes</string>
+    <string name="settings_font_size_large">Nagy</string>
+    <string name="settings_import">Importálás</string>
+    <string name="settings_export">Exportálás</string>
+    <string name="settings_import_success">Sikeresen importálva: %d étel</string>
+    <string name="settings_import_error">Hiba az importálás során</string>
+    <string name="settings_export_success">Exportálás sikeres</string>
+    <string name="settings_export_error">Hiba az exportálás során</string>
+    <string name="settings_accent_color">Akcentus szín</string>
+
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Mégse</string>
+    <string name="confirm">Megerősítés</string>
+    <string name="yes">Igen</string>
+    <string name="no">Nem</string>
+    <string name="delete">Törlés</string>
+    <string name="save">Mentés</string>
 </resources>

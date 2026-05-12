@@ -9,11 +9,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import com.sranker.mealmate.ui.MealMateTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * The single-entry [ComponentActivity] for MealMate.
- * Sets up edge-to-edge rendering and hosts the Compose UI tree.
+ * Sets up edge-to-edge rendering and hosts the Compose UI tree
+ * wrapped in the [MealMateTheme].
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -22,11 +24,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                Text(text = "MealMate")
+            MealMateTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    Text(text = "MealMate")
+                }
             }
         }
     }
