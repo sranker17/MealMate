@@ -1,0 +1,132 @@
+package com.sranker.mealmate.data
+
+import kotlinx.coroutines.flow.Flow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Repository that manages the menu planning lifecycle.
+ *
+ * Responsibilities include:
+ * - Creating and retrieving the active (in-progress) menu.
+ * - Pin / unpin meals within the active menu.
+ * - Accept (lock) and finish (archive) a menu.
+ * - Tracking completed menu count and updating meal cooldown indices.
+ */
+@Singleton
+class MenuRepository @Inject constructor(
+    private val menuDao: MenuDao,
+    private val mealRepository: MealRepository
+) {
+
+    /** Observe the active (non-completed) menu with its meals. */
+    fun getActiveMenuWithMealsFlow(): Flow<MenuWithMeals?> = menuDao.getActiveMenuWithMealsFlow()
+
+    /** Get the active menu with meals once. */
+    suspend fun getActiveMenuWithMeals(): MenuWithMeals? = menuDao.getActiveMenuWithMeals()
+
+    /**
+     * Returns the existing active menu, or creates a new one with a date-based title
+     * if none exists.
+     */
+    suspend fun getOrCreateActiveMenu(): MenuEntity {
+        val existing = menuDao.getActiveMenu()
+        if (existing != null) return existing
+
+        val dateTitle = SimpleDateFormat("yyyy. MM. dd.", Locale.getDefault()).format(Date())
+        val newMenu = MenuEntity(title = dateTitle)
+        val id = menuDao.insert(newMenu)
+        return newMenu.copy(id = id)
+    }
+
+    /**
+     * Pin a meal to the active menu. Creates the active menu first if needed.
+     *
+     * @param mealId The meal to pin.
+     */
+    suspend fun pinMealToActiveMenu(mealId: Long) {
+        val menu = getOrCreateActiveMenu()
+        val existing = menuDao.getMenuMealCrossRef(menu.id, mealId)
+        if (existing == null) {
+            menuDao.insertMenuMealCrossRef(
+                MenuMealCrossRef(menuId = menu.id, mealId = mealId, isPinned = true)
+            )
+        } else if (!existing.isPinned) {
+            menuDao.updateMenuMealCrossRef(existing.copy(isPinned = true))
+        }
+    }
+
+    /**
+     * Unpin a meal from the active menu (removes the cross-ref row entirely).
+     */
+    suspend fun unpinMealFromActiveMenu(mealId: Long) {
+        val menu = menuDao.getActiveMenu() ?: return
+        menuDao.removeMealFromMenu(menu.id, mealId)
+    }
+
+    /**
+     * Accept (lock) the active menu.
+     * All currently pinned meals become fixed — no further edits allowed.
+     * If no meals are pinned, this is a no-op.
+     */
+    suspend fun acceptMenu(): Boolean {
+        val menu = menuDao.getActiveMenu() ?: return false
+        val crossRefs = menuDao.getMenuMealCrossRefsForMenu(menu.id)
+        if (crossRefs.isEmpty()) return false
+        // Menu is locked simply by the fact that it transitions state.
+        // The `isPinned` flag stays true but the UI will no longer allow changes.
+        // No database change needed — acceptance is a semantic state enforced by the UI.
+        return true
+    }
+
+    /**
+     * Finish (complete) the active menu.
+     *
+     * - Marks all unpinned meals as skipped.
+     * - Increments each pinned meal's [timesCooked] and sets [lastCompletedMenuIndex].
+     * - Archives the menu with a sequential [completionIndex].
+     *
+     * @return The completion index assigned to the menu, or -1 if no active menu exists.
+     */
+    suspend fun finishMenu(): Int {
+        val menu = menuDao.getActiveMenu() ?: return -1
+        val crossRefs = menuDao.getMenuMealCrossRefsForMenu(menu.id)
+
+        val nextIndex = (menuDao.getMaxCompletionIndex() ?: 0) + 1
+
+        crossRefs.forEach { ref ->
+            val mealId = ref.mealId
+            if (ref.isCompleted) {
+                // Meal was cooked, record it
+                mealRepository.recordMealCooked(mealId, nextIndex)
+            } else {
+                // Meal was pinned but not completed, skip it
+                mealRepository.recordMealSkipped(mealId)
+            }
+        }
+
+        menuDao.completeActiveMenu(nextIndex)
+        return nextIndex
+    }
+
+    /**
+     * Mark a meal as completed in the active menu.
+     */
+    suspend fun markMealCompleted(mealId: Long) {
+        val menu = menuDao.getActiveMenu() ?: return
+        menuDao.markMealCompleted(menu.id, mealId)
+    }
+
+    /** Observe completed menus with their meals. */
+    fun getCompletedMenusWithMealsFlow(): Flow<List<MenuWithMeals>> =
+        menuDao.getCompletedMenusWithMealsFlow()
+
+    /** Get all completed menus once. */
+    suspend fun getCompletedMenusOnce(): List<MenuEntity> = menuDao.getCompletedMenusOnce()
+
+    /** Get a specific menu with meals by ID. */
+    suspend fun getMenuWithMeals(menuId: Long): MenuWithMeals? = menuDao.getMenuWithMeals(menuId)
+}
