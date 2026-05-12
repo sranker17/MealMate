@@ -28,7 +28,7 @@ A Hungarian-language Android application designed for 6-inch phones and 12-inch 
 
 ## Agent Tasks
 
-The following tasks are broken down to be fully separable and LLM-digestible.
+The following tasks are broken down to be fully separable and LLM-digestible. Every task should be validated by running `gradle build`. Also, after every task, the application should be tested to ensure that it works as expected. Tests should be added for every new feature.
 
 ### Task 1 — Project Setup & Architecture
 **Context**: Initialize the Android project with necessary dependencies and structural layers.
