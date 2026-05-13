@@ -127,6 +127,7 @@ class MenuRepositoryTest {
         val crossRefs = listOf(MenuMealCrossRef(menuId = 1L, mealId = 42L, isPinned = true))
         coEvery { menuDao.getActiveMenu() } returns menu
         coEvery { menuDao.getMenuMealCrossRefsForMenu(1L) } returns crossRefs
+        coEvery { menuDao.acceptActiveMenu() } returns Unit
 
         val result = repository.acceptMenu()
 

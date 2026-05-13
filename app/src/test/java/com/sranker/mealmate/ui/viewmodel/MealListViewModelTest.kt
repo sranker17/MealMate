@@ -200,7 +200,9 @@ class MealListViewModelTest {
     }
 
     @Test
-    fun `addToActivePlan emits AlreadyInPlan when meal already in plan`() = runTest(testDispatcher) {
+    fun `addToActivePlan removes from plan when meal already in plan`() = runTest {
+        coEvery { menuRepository.unpinMealFromActiveMenu(1L) } returns Unit
+
         val activeMenu = MenuWithMeals(
             menu = com.sranker.mealmate.data.MenuEntity(id = 1L, title = "Menu"),
             meals = listOf(
@@ -217,8 +219,32 @@ class MealListViewModelTest {
 
         viewModel.addToActivePlan(1L)
 
-        // Should not call addMealToActiveMenu since already in plan
-        coVerify(inverse = true) { menuRepository.addMealToActiveMenu(1L) }
+        // Should call unpin since already in plan and menu is not locked
+        coVerify { menuRepository.unpinMealFromActiveMenu(1L) }
+    }
+
+    @Test
+    fun `addToActivePlan shows locked when menu is accepted`() = runTest {
+        coEvery { menuRepository.unpinMealFromActiveMenu(any()) } returns Unit
+
+        val activeMenu = MenuWithMeals(
+            menu = com.sranker.mealmate.data.MenuEntity(id = 1L, title = "Menu", isAccepted = true),
+            meals = listOf(
+                com.sranker.mealmate.data.MealEntity(id = 1L, name = "Chicken Soup")
+            )
+        )
+        coEvery { menuRepository.getActiveMenuWithMealsFlow() } returns MutableStateFlow(activeMenu)
+
+        // Recreate ViewModel to pick up new flow
+        viewModel = MealListViewModel(mealRepository, menuRepository)
+
+        // Wait for state to settle
+        kotlinx.coroutines.delay(100)
+
+        viewModel.addToActivePlan(1L)
+
+        // Should emit MenuLocked (via events flow)
+        coVerify(inverse = true) { menuRepository.unpinMealFromActiveMenu(1L) }
     }
 
     // endregion

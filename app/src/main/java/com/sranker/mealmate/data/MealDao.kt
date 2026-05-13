@@ -70,6 +70,7 @@ interface MealDao {
     /**
      * Returns a random meal whose [lastCompletedMenuIndex] indicates it was last
      * completed at least [cooldown] menus ago, or never completed (-1).
+     * Excludes meals whose IDs are in [excludeIds].
      *
      * Example: With cooldown = 3, a meal cooked in menu #1 will be blocked until
      * menu #4 is completed (1 + 3 = 4), at which point `currentIndex - lastIndex >= 3`.
@@ -78,24 +79,32 @@ interface MealDao {
      *   since the meal was last cooked.
      * @param currentIndex The current [MenuEntity.completionIndex] (i.e. the total
      *   number of completed menus so far).
+     * @param excludeIds List of meal IDs to exclude from the result.
      */
     @Query(
         """
         SELECT * FROM meals
-        WHERE last_completed_menu_index = -1
-           OR (:currentIndex - last_completed_menu_index) >= :cooldown
+        WHERE (last_completed_menu_index = -1
+           OR (:currentIndex - last_completed_menu_index) >= :cooldown)
+        AND id NOT IN (:excludeIds)
         ORDER BY RANDOM()
         LIMIT 1
         """
     )
-    suspend fun getRandomMealNotInCooldown(cooldown: Int, currentIndex: Int): MealEntity?
+    suspend fun getRandomMealNotInCooldown(
+        cooldown: Int,
+        currentIndex: Int,
+        excludeIds: List<Long> = emptyList()
+    ): MealEntity?
 
     /**
      * Returns a random meal filtered by tag IDs, respecting cooldown rules.
+     * Excludes meals whose IDs are in [excludeIds].
      *
      * @param cooldown The minimum number of completed menus between servings.
      * @param currentIndex The current completion index.
      * @param tagIds The list of tag IDs to filter by.
+     * @param excludeIds List of meal IDs to exclude from the result.
      */
     @Query(
         """
@@ -106,6 +115,7 @@ interface MealDao {
         )
         AND (last_completed_menu_index = -1
              OR (:currentIndex - last_completed_menu_index) >= :cooldown)
+        AND id NOT IN (:excludeIds)
         ORDER BY RANDOM()
         LIMIT 1
         """
@@ -113,7 +123,8 @@ interface MealDao {
     suspend fun getRandomMealNotInCooldownByTags(
         cooldown: Int,
         currentIndex: Int,
-        tagIds: List<Long>
+        tagIds: List<Long>,
+        excludeIds: List<Long> = emptyList()
     ): MealEntity?
 
     // endregion

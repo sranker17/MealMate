@@ -384,3 +384,27 @@ In the menu history detail screen, foods listed should be clickable to open the 
 | 16 | Post-acceptance navigation to detail      | Medium   | None                                        |
 | 17 | History food details navigation           | Medium   | None                                        |
 
+
+---
+
+## Implementation Progress
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | English localization + language setting | ✅ **95%** | English strings created, SettingsRepository+SettingsViewModel done, SettingsScreen language picker done, MainActivity locale switching done. PlannerScreen now uses stringResources |
+| 2 | Food list toggle remove from plan | ✅ **Done** | MealListViewModel.addToActivePlan now removes instead of showing "already in plan" |
+| 3 | Fix tag selection in add food | ✅ **Done** | MealEditViewModel init properly loads allTags from flow |
+| 4 | Reorder fields in meal edit | ✅ **Done** | New order: Name → Recipe → Servings → Ingredients → Tags → Source |
+| 5 | Add ingredient validation | ✅ **Done** | validate() checks for non-blank ingredient. ingredientsError added to MealEditUiState |
+| 6 | Undo delete food | ✅ **Done** | Snackbar with undo action on meal delete |
+| 7 | Modernize icons | ⬜ **Not started** | Low priority - cosmetic only |
+| 8 | Settings cooking history cleanup | ✅ **Done** | Compact button replacing separate card |
+| 9 | Hardcoded strings → strings.xml | ✅ **95%** | All screen files use stringResource. ViewModels still have a few hardcoded error strings |
+| 10 | Prevent re-recommending pinned foods | ✅ **Done** | MealDao + MealRepository + PlannerViewModel updated with excludeIds |
+| 11 | Single recommendation button | ✅ **Done** | Removed random button, only recommend button remains |
+| 12 | Recommended food in pinned list | ✅ **Done** | RecommendedMealCard shown in pinned meals area with distinct look |
+| 13 | Remove "no recommendation" block | ✅ **Done** | No placeholder UI when no recommendation available; only recommend button shown |
+| 14 | Hide recommendation after finalized | ✅ **Done** | Recommend button hidden when isAccepted=true |
+| 15 | Block accept until recommendation handled | ✅ **Done** | hasOutstandingRecommendation flag blocks accept button until pin/skip |
+| 16 | Post-acceptance navigation to detail | ✅ **Done** | PinnedMealCard clickable, onMealClick passed from PlannerScreen |
+| 17 | History food details navigation | ✅ **Done** | MenuHistoryDetailScreen meals clickable with onMealClick |

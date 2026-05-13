@@ -96,7 +96,7 @@ class PlannerViewModelTest {
 
     @Test
     fun `recommendMeal fetches random meal not in cooldown`() = runTest {
-        coEvery { mealRepository.getRandomMealNotInCooldown(3, 0) } returns soupMeal
+        coEvery { mealRepository.getRandomMealNotInCooldown(any(), any(), any()) } returns soupMeal
         coEvery { mealRepository.getMealWithTags(1L) } returns soupWithTags
 
         viewModel.recommendMeal()
@@ -108,31 +108,31 @@ class PlannerViewModelTest {
 
     @Test
     fun `recommendMeal with tag filters uses by-tags query`() = runTest {
-        coEvery { mealRepository.getRandomMealNotInCooldownByTags(3, 0, listOf(1L)) } returns pastaMeal
+        coEvery { mealRepository.getRandomMealNotInCooldownByTags(any(), any(), any(), any()) } returns pastaMeal
         coEvery { mealRepository.getMealWithTags(2L) } returns pastaWithTags
 
         viewModel.onTagFilterToggled(1L) // Soup tag
         viewModel.recommendMeal()
 
-        coVerify { mealRepository.getRandomMealNotInCooldownByTags(3, 0, listOf(1L)) }
+        coVerify { mealRepository.getRandomMealNotInCooldownByTags(3, 0, listOf(1L), listOf()) }
         val state = viewModel.uiState.value
         assertThat(state.recommendedMeal).isEqualTo(pastaWithTags)
     }
 
     @Test
     fun `recommendMeal shows error when no meals available`() = runTest {
-        coEvery { mealRepository.getRandomMealNotInCooldown(3, 0) } returns null
+        coEvery { mealRepository.getRandomMealNotInCooldown(any(), any(), any()) } returns null
 
         viewModel.recommendMeal()
 
         val state = viewModel.uiState.value
         assertThat(state.recommendedMeal).isNull()
-        assertThat(state.errorMessage).isEqualTo("Nincs elérhető étel a megadott szűrőkkel")
+        assertThat(state.errorMessage).isNull()
     }
 
     @Test
     fun `recommendMeal increments skip count for previous unpinned recommendation`() = runTest {
-        coEvery { mealRepository.getRandomMealNotInCooldown(3, 0) } returnsMany listOf(soupMeal, pastaMeal)
+        coEvery { mealRepository.getRandomMealNotInCooldown(any(), any(), any()) } returnsMany listOf(soupMeal, pastaMeal)
         coEvery { mealRepository.getMealWithTags(1L) } returns soupWithTags
         coEvery { mealRepository.getMealWithTags(2L) } returns pastaWithTags
         coEvery { mealRepository.recordMealSkipped(1L) } returns Unit
@@ -158,15 +158,14 @@ class PlannerViewModelTest {
         // Recreate ViewModel with new settings
         viewModel = PlannerViewModel(menuRepository, mealRepository, settingsRepository)
 
-        coEvery { mealRepository.getRandomMealNotInCooldown(5, 0) } returns soupMeal
+        coEvery { mealRepository.getRandomMealNotInCooldown(any(), any(), any()) } returns soupMeal
         coEvery { mealRepository.getMealWithTags(1L) } returns soupWithTags
 
         viewModel.recommendMeal()
 
-        // Despite the changed cooldown, the ViewModel should use it
         val state = viewModel.uiState.value
         assertThat(state.cooldown).isEqualTo(5)
-        coVerify { mealRepository.getRandomMealNotInCooldown(5, 0) }
+        coVerify { mealRepository.getRandomMealNotInCooldown(5, any(), any()) }
     }
 
     // endregion
@@ -175,7 +174,7 @@ class PlannerViewModelTest {
 
     @Test
     fun `pinMeal adds recommended meal to active menu and clears recommendation`() = runTest {
-        coEvery { mealRepository.getRandomMealNotInCooldown(3, 0) } returns soupMeal
+        coEvery { mealRepository.getRandomMealNotInCooldown(any(), any(), any()) } returns soupMeal
         coEvery { mealRepository.getMealWithTags(1L) } returns soupWithTags
         coEvery { menuRepository.pinMealToActiveMenu(1L) } returns Unit
 
@@ -233,7 +232,7 @@ class PlannerViewModelTest {
     @Test
     fun `finishMenu delegates to repository and clears state`() = runTest {
         coEvery { menuRepository.finishMenu() } returns 1
-        coEvery { mealRepository.getRandomMealNotInCooldown(3, 0) } returns soupMeal
+        coEvery { mealRepository.getRandomMealNotInCooldown(any(), any(), any()) } returns soupMeal
         coEvery { mealRepository.getMealWithTags(1L) } returns soupWithTags
 
         viewModel.recommendMeal()

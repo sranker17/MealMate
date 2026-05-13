@@ -66,6 +66,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setAccentColor(name) }
     }
 
+    /** Update the language preference. */
+    fun setLanguage(lang: String) {
+        viewModelScope.launch { settingsRepository.setLanguage(lang) }
+    }
+
     fun resetCooldowns() {
         viewModelScope.launch { mealRepository.resetCooldowns() }
     }

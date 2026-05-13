@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,8 +44,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.data.MealWithTags
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MealListEvent
@@ -70,16 +73,34 @@ fun MealListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     // Collect one-shot events for snackbar
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
-            val message = when (event) {
-                MealListEvent.AddedToPlan -> "Hozzáadva a heti tervhez"
-                MealListEvent.AlreadyInPlan -> "Már hozzá van adva a heti tervhez"
-                MealListEvent.MenuLocked -> "A menü már elfogadásra került"
+            when (event) {
+                MealListEvent.AddedToPlan -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_added_to_plan))
+                }
+                MealListEvent.RemovedFromPlan -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_removed_from_plan))
+                }
+                MealListEvent.AlreadyInPlan -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_already_in_plan))
+                }
+                MealListEvent.MenuLocked -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_plan_locked))
+                }
+                is MealListEvent.MealDeleted -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.meal_list_deleted),
+                        actionLabel = context.getString(R.string.meal_list_undo)
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoDeleteMeal()
+                    }
+                }
             }
-            snackbarHostState.showSnackbar(message)
         }
     }
 
@@ -94,7 +115,7 @@ fun MealListScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Ételek",
+                text = stringResource(R.string.meal_list_title),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
@@ -102,14 +123,14 @@ fun MealListScreen(
             IconButton(onClick = onManageTagsClick) {
                 Icon(
                     imageVector = Icons.Default.FilterList,
-                    contentDescription = "Címkék kezelése",
+                    contentDescription = stringResource(R.string.meal_list_manage_tags),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = onAddMealClick) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Új étel",
+                    contentDescription = stringResource(R.string.meal_list_new_meal),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -119,7 +140,7 @@ fun MealListScreen(
         OutlinedTextField(
             value = state.searchQuery,
             onValueChange = viewModel::onSearchQueryChanged,
-            placeholder = { Text("Keresés…", style = MaterialTheme.typography.bodyLarge) },
+            placeholder = { Text(stringResource(R.string.meal_list_search_hint), style = MaterialTheme.typography.bodyLarge) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -162,7 +183,7 @@ fun MealListScreen(
         if (state.meals.isEmpty()) {
             EmptyState(
                 icon = Icons.Default.Restaurant,
-                message = "Nincs még étel hozzáadva"
+                message = stringResource(R.string.meal_list_empty)
             )
         } else {
             LazyColumn(
@@ -244,7 +265,7 @@ private fun MealListItem(
             IconButton(onClick = onAddToPlan) {
                 Icon(
                     imageVector = if (isInPlan) Icons.Default.BookmarkAdded else Icons.Default.BookmarkAdd,
-                    contentDescription = "Tervhez adás",
+                    contentDescription = stringResource(R.string.meal_add_to_plan),
                     tint = if (isInPlan)
                         MaterialTheme.colorScheme.primary
                     else
@@ -254,7 +275,7 @@ private fun MealListItem(
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Törlés",
+                    contentDescription = stringResource(R.string.delete),
                     tint = MaterialTheme.colorScheme.error
                 )
             }

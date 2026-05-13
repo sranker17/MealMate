@@ -30,6 +30,7 @@ import javax.inject.Inject
  * @property allTags All available tags for filter selection.
  * @property cooldown The current cooldown parameter from settings.
  * @property errorMessage An error or informational message.
+ * @property errorMessageResId An error or informational message resource ID.
  */
 data class PlannerUiState(
     val recommendedMeal: MealWithTags? = null,
@@ -40,8 +41,12 @@ data class PlannerUiState(
     val selectedTagIds: Set<Long> = emptySet(),
     val allTags: List<TagEntity> = emptyList(),
     val cooldown: Int = 3,
-    val errorMessage: String? = null
-)
+    val errorMessage: String? = null,
+    val errorMessageResId: Int? = null
+) {
+    /** True when there is a recommended meal that hasn't been pinned or skipped yet. */
+    val hasOutstandingRecommendation: Boolean get() = recommendedMeal != null
+}
 
 /**
  * ViewModel for the planner (main) screen.
@@ -132,7 +137,7 @@ class PlannerViewModel @Inject constructor(
         val state = _uiState.value
 
         viewModelScope.launch {
-            _uiState.value = state.copy(isRecommending = true, errorMessage = null)
+            _uiState.value = state.copy(isRecommending = true, errorMessage = null, errorMessageResId = null)
 
             // Record skip for the previously recommended meal if it wasn't pinned
             val previousId = lastRecommendedMealId
@@ -147,10 +152,20 @@ class PlannerViewModel @Inject constructor(
             val currentIndex = menuRepository.getCurrentCompletionIndex()
             val tagIds = _uiState.value.selectedTagIds.toList()
 
+            // Collect IDs to exclude: already pinned meals + last recommended (if still pending)
+            val excludeIds = buildSet {
+                // Add all meals currently in the active menu (pinned)
+                state.activeMenu?.meals?.forEach { add(it.id) }
+                // Add the last recommended meal if it hasn't been pinned yet
+                if (previousId != null && state.activeMenuCrossRefs.none { it.mealId == previousId && it.isPinned }) {
+                    add(previousId)
+                }
+            }.toList()
+
             val meal = if (tagIds.isEmpty()) {
-                mealRepository.getRandomMealNotInCooldown(cooldown, currentIndex)
+                mealRepository.getRandomMealNotInCooldown(cooldown, currentIndex, excludeIds)
             } else {
-                mealRepository.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds)
+                mealRepository.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds, excludeIds)
             }
 
             if (meal != null) {
@@ -165,7 +180,8 @@ class PlannerViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     recommendedMeal = null,
                     isRecommending = false,
-                    errorMessage = "Nincs elérhető étel a megadott szűrőkkel"
+                    errorMessage = null,
+                    errorMessageResId = null
                 )
             }
         }

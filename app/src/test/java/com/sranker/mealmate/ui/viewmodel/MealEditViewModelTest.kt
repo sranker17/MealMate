@@ -131,7 +131,7 @@ class MealEditViewModelTest {
     // region Validation
 
     @Test
-    fun `save with empty name shows error`() = runTest(testDispatcher) {
+    fun `save with empty name shows error`() = runTest {
         val savedStateHandle = SavedStateHandle()
         val viewModel = MealEditViewModel(savedStateHandle, mealRepository)
 
@@ -143,8 +143,9 @@ class MealEditViewModelTest {
     }
 
     @Test
-    fun `save with valid data calls repository`() = runTest(testDispatcher) {
+    fun `save with valid data calls repository`() = runTest {
         coEvery { mealRepository.saveMeal(any(), any(), any()) } returns 42L
+        coEvery { mealRepository.isMealNameTaken(any(), any()) } returns false
 
         val savedStateHandle = SavedStateHandle()
         val viewModel = MealEditViewModel(savedStateHandle, mealRepository)
@@ -179,8 +180,9 @@ class MealEditViewModelTest {
     }
 
     @Test
-    fun `save filters out blank ingredient names`() = runTest(testDispatcher) {
+    fun `save filters out blank ingredient names`() = runTest {
         coEvery { mealRepository.saveMeal(any(), any(), any()) } returns 1L
+        coEvery { mealRepository.isMealNameTaken(any(), any()) } returns false
 
         val savedStateHandle = SavedStateHandle()
         val viewModel = MealEditViewModel(savedStateHandle, mealRepository)
@@ -238,7 +240,7 @@ class MealEditViewModelTest {
     }
 
     @Test
-    fun `edit mode shows error when meal not found`() = runTest(testDispatcher) {
+    fun `edit mode shows error when meal not found`() = runTest {
         coEvery { mealRepository.getMealWithTags(5L) } returns null
         coEvery { mealRepository.getMealWithIngredients(5L) } returns null
 
@@ -246,7 +248,8 @@ class MealEditViewModelTest {
         val viewModel = MealEditViewModel(savedStateHandle, mealRepository)
 
         val state = viewModel.uiState.value
-        assertThat(state.errorMessage).isEqualTo("Étel nem található")
+        assertThat(state.errorMessage).isNull()
+        assertThat(state.nameErrorResId).isEqualTo(com.sranker.mealmate.R.string.meal_detail_not_found)
     }
 
     // endregion

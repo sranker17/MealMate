@@ -19,12 +19,14 @@ import javax.inject.Singleton
  * @property isDarkTheme Whether the dark theme is enabled.
  * @property fontSizeScale Scale factor for font sizing (1.0 = default).
  * @property accentColorName The name of the accent color to use.
+ * @property language The language setting ("system", "hu", or "en").
  */
 data class Settings(
     val cooldown: Int = 3,
     val isDarkTheme: Boolean = true,
     val fontSizeScale: Float = 1.0f,
-    val accentColorName: String = "teal"
+    val accentColorName: String = "teal",
+    val language: String = "system"
 )
 
 /**
@@ -42,6 +44,7 @@ class SettingsRepository @Inject constructor(
         private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
         private val KEY_FONT_SIZE_SCALE = stringPreferencesKey("font_size_scale")
         private val KEY_ACCENT_COLOR = stringPreferencesKey("accent_color")
+        private val KEY_LANGUAGE = stringPreferencesKey("language")
     }
 
     /** Observe all settings as a single [Settings] data object. */
@@ -50,7 +53,8 @@ class SettingsRepository @Inject constructor(
             cooldown = prefs[KEY_COOLDOWN] ?: 3,
             isDarkTheme = prefs[KEY_DARK_THEME] ?: true,
             fontSizeScale = (prefs[KEY_FONT_SIZE_SCALE]?.toFloatOrNull()) ?: 1.0f,
-            accentColorName = prefs[KEY_ACCENT_COLOR] ?: "teal"
+            accentColorName = prefs[KEY_ACCENT_COLOR] ?: "teal",
+            language = prefs[KEY_LANGUAGE] ?: "system"
         )
     }
 
@@ -74,5 +78,10 @@ class SettingsRepository @Inject constructor(
     /** Update the accent color. */
     suspend fun setAccentColor(name: String) {
         dataStore.edit { prefs -> prefs[KEY_ACCENT_COLOR] = name }
+    }
+
+    /** Update the language. */
+    suspend fun setLanguage(lang: String) {
+        dataStore.edit { prefs -> prefs[KEY_LANGUAGE] = lang }
     }
 }

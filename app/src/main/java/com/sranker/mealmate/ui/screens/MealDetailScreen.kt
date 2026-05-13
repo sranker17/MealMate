@@ -39,8 +39,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MealDetailViewModel
 
@@ -73,12 +75,12 @@ fun MealDetailScreen(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza",
+                    contentDescription = stringResource(R.string.back),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
-                text = "Étel Részletei",
+                text = stringResource(R.string.meal_detail_title),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
@@ -88,14 +90,14 @@ fun MealDetailScreen(
                 IconButton(onClick = { onEditClick(mealId) }) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Szerkesztés",
+                        contentDescription = stringResource(R.string.meal_detail_edit),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Törlés",
+                        contentDescription = stringResource(R.string.meal_detail_delete),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
@@ -110,7 +112,7 @@ fun MealDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Betöltés…",
+                        text = stringResource(R.string.meal_detail_loading),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -119,7 +121,7 @@ fun MealDetailScreen(
             state.errorMessage != null -> {
                 EmptyState(
                     icon = Icons.Default.Restaurant,
-                    message = state.errorMessage ?: "Hiba történt"
+                    message = state.errorMessage ?: stringResource(R.string.meal_detail_error)
                 )
             }
             else -> {
@@ -145,19 +147,19 @@ fun MealDetailScreen(
                     ) {
                         StatItem(
                             icon = Icons.Default.Star,
-                            label = "Főzések",
+                            label = stringResource(R.string.meal_detail_cooked),
                             value = meal.meal.timesCooked.toString()
                         )
                         StatItem(
                             icon = Icons.Default.SkipNext,
-                            label = "Kihagyások",
+                            label = stringResource(R.string.meal_detail_skipped),
                             value = meal.meal.timesSkipped.toString()
                         )
                         meal.meal.servingSize?.let { size ->
                             StatItem(
                                 icon = Icons.Default.People,
-                                label = "Adag",
-                                value = "$size fő"
+                                label = stringResource(R.string.meal_detail_serving_size),
+                                value = "$size ${stringResource(R.string.meal_detail_servings_unit)}"
                             )
                         }
                     }
@@ -166,7 +168,7 @@ fun MealDetailScreen(
                     if (meal.tags.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Címkék",
+                            text = stringResource(R.string.meal_detail_tags),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
@@ -189,7 +191,7 @@ fun MealDetailScreen(
                     if (meal.meal.sourceUrl.isNotBlank()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Forrás",
+                            text = stringResource(R.string.meal_detail_source),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
@@ -224,13 +226,13 @@ fun MealDetailScreen(
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
                     Text(
-                        text = "Recept",
+                        text = stringResource(R.string.meal_detail_recipe),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = meal.meal.recipe.ifBlank { "Nincs recept megadva" },
+                        text = meal.meal.recipe.ifBlank { stringResource(R.string.meal_detail_no_recipe) },
                         style = MaterialTheme.typography.bodyLarge,
                         color = if (meal.meal.recipe.isBlank())
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -244,7 +246,7 @@ fun MealDetailScreen(
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
                     Text(
-                        text = "Hozzávalók",
+                        text = stringResource(R.string.meal_detail_ingredients),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -252,7 +254,7 @@ fun MealDetailScreen(
                     val ingredients = state.mealWithIngredients?.ingredients
                     if (ingredients.isNullOrEmpty()) {
                         Text(
-                            text = "Nincsenek hozzávalók",
+                            text = stringResource(R.string.meal_detail_no_ingredients),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,7 +32,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.TagManageViewModel
 
@@ -64,12 +65,12 @@ fun TagManageScreen(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza",
+                    contentDescription = stringResource(R.string.back),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
-                text = "Címkék kezelése",
+                text = stringResource(R.string.tag_manage_title),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
@@ -86,7 +87,7 @@ fun TagManageScreen(
             OutlinedTextField(
                 value = state.newTagName,
                 onValueChange = viewModel::onNewTagNameChanged,
-                placeholder = { Text("Új címke…") },
+                placeholder = { Text(stringResource(R.string.tag_manage_add_hint)) },
                 isError = state.errorMessage != null,
                 supportingText = state.errorMessage?.let { error ->
                     { Text(error, color = MaterialTheme.colorScheme.error) }
@@ -105,7 +106,7 @@ fun TagManageScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Hozzáadás",
+                    contentDescription = stringResource(R.string.tag_manage_add),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -117,7 +118,7 @@ fun TagManageScreen(
         if (state.tags.isEmpty()) {
             EmptyState(
                 icon = Icons.AutoMirrored.Filled.Label,
-                message = "Még nincsenek címkék"
+                message = stringResource(R.string.tag_manage_empty)
             )
         } else {
             LazyColumn(
@@ -149,7 +150,7 @@ fun TagManageScreen(
                             IconButton(onClick = { viewModel.deleteTag(tag) }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Törlés",
+                                    contentDescription = stringResource(R.string.delete),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }

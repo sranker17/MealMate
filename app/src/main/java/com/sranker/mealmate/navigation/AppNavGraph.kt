@@ -77,7 +77,8 @@ fun AppNavGraph(
             PlannerScreen(
                 viewModel = viewModel,
                 windowWidthSizeClass = windowWidthSizeClass,
-                onNavigateToMeals = { navController.navigate(Routes.MEAL_LIST) }
+                onNavigateToMeals = { navController.navigate(Routes.MEAL_LIST) },
+                onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) }
             )
         }
 
@@ -179,7 +180,8 @@ fun AppNavGraph(
             val viewModel: MenuHistoryDetailViewModel = hiltViewModel()
             MenuHistoryDetailScreen(
                 viewModel = viewModel,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) }
             )
         }
 

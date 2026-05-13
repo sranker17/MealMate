@@ -39,8 +39,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.viewmodel.MealEditViewModel
 
 /**
@@ -80,12 +82,15 @@ fun MealEditScreen(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza",
+                    contentDescription = stringResource(R.string.back),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
-                text = if (state.isEditing) "Étel szerkesztése" else "Új étel",
+                text = if (state.isEditing)
+                    stringResource(R.string.meal_edit_title_edit)
+                else
+                    stringResource(R.string.meal_edit_title_new),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -96,7 +101,7 @@ fun MealEditScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Save,
-                    contentDescription = "Mentés",
+                    contentDescription = stringResource(R.string.meal_edit_save),
                     tint = if (state.isSaving)
                         MaterialTheme.colorScheme.onSurfaceVariant
                     else
@@ -110,13 +115,13 @@ fun MealEditScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Name
+            // 1. Name
             item {
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = viewModel::onNameChanged,
-                    label = { Text("Név") },
-                    placeholder = { Text("Pl. Csirkepaprikás") },
+                    label = { Text(stringResource(R.string.meal_edit_name_label)) },
+                    placeholder = { Text(stringResource(R.string.meal_edit_name_hint)) },
                     isError = state.nameError != null,
                     supportingText = state.nameError?.let { error ->
                         { Text(error, color = MaterialTheme.colorScheme.error) }
@@ -128,51 +133,13 @@ fun MealEditScreen(
                 )
             }
 
-            // Tags section — always visible, even if empty
+            // 2. Recipe
             item {
-                SectionLabel(text = "Címkék")
-
-                // Existing tags as multi-select chips
-                if (state.allTags.isNotEmpty()) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        state.allTags.forEach { tag ->
-                            val isSelected = tag.id in state.selectedTagIds
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.onTagToggled(tag.id) },
-                                label = { Text(tag.name, style = MaterialTheme.typography.labelMedium) },
-                                trailingIcon = if (isSelected) {
-                                    { Icon(Icons.Default.Close, contentDescription = "Eltávolítás", modifier = Modifier.size(14.dp)) }
-                                } else null,
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                    selectedLabelColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                } else {
-                    Text(
-                        text = "Még nincsenek címkék. Hozz létre címkéket a Címkék oldalon.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
-            }
-
-            // Recipe
-            item {
-                SectionLabel(text = "Recept")
+                SectionLabel(text = stringResource(R.string.meal_edit_recipe_label))
                 OutlinedTextField(
                     value = state.recipe,
                     onValueChange = viewModel::onRecipeChanged,
-                    placeholder = { Text("Elkészítési útmutató…") },
+                    placeholder = { Text(stringResource(R.string.meal_edit_recipe_hint)) },
                     minLines = 3,
                     maxLines = 8,
                     shape = MaterialTheme.shapes.medium,
@@ -181,15 +148,15 @@ fun MealEditScreen(
                 )
             }
 
-            // Serving size
+            // 3. Serving Size
             item {
-                SectionLabel(text = "Adag")
+                SectionLabel(text = stringResource(R.string.meal_edit_serving_size))
                 OutlinedTextField(
                     value = state.servingSize?.toString() ?: "",
                     onValueChange = { value ->
                         viewModel.onServingSizeChanged(value.toIntOrNull())
                     },
-                    placeholder = { Text("Fő") },
+                    placeholder = { Text(stringResource(R.string.meal_edit_serving_size)) },
                     singleLine = true,
                     shape = MaterialTheme.shapes.medium,
                     colors = elegantTextFieldColors(),
@@ -198,29 +165,14 @@ fun MealEditScreen(
                 )
             }
 
-            // Source URL
-            item {
-                SectionLabel(text = "Forrás")
-                OutlinedTextField(
-                    value = state.sourceUrl,
-                    onValueChange = viewModel::onSourceUrlChanged,
-                    placeholder = { Text("https://…") },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = elegantTextFieldColors(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            // Ingredients section
+            // 4. Ingredients section
             item {
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant,
                     thickness = 0.5.dp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                SectionLabel(text = "Hozzávalók")
+                SectionLabel(text = stringResource(R.string.meal_edit_ingredients_label))
             }
 
             itemsIndexed(state.ingredients) { index, ingredient ->
@@ -231,7 +183,7 @@ fun MealEditScreen(
                     OutlinedTextField(
                         value = ingredient.name,
                         onValueChange = { viewModel.onIngredientChanged(index, it) },
-                        placeholder = { Text("Pl. 200g liszt") },
+                        placeholder = { Text(stringResource(R.string.meal_edit_ingredient_hint)) },
                         singleLine = true,
                         shape = MaterialTheme.shapes.small,
                         colors = elegantTextFieldColors(),
@@ -241,7 +193,7 @@ fun MealEditScreen(
                         IconButton(onClick = { viewModel.onRemoveIngredient(index) }) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Eltávolítás",
+                                contentDescription = stringResource(R.string.meal_edit_remove),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -263,8 +215,59 @@ fun MealEditScreen(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Hozzávaló hozzáadása")
+                    Text(stringResource(R.string.meal_edit_add_ingredient))
                 }
+            }
+
+            // 5. Tags section
+            item {
+                SectionLabel(text = stringResource(R.string.meal_edit_tags_label))
+
+                if (state.allTags.isNotEmpty()) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        state.allTags.forEach { tag ->
+                            val isSelected = tag.id in state.selectedTagIds
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { viewModel.onTagToggled(tag.id) },
+                                label = { Text(tag.name, style = MaterialTheme.typography.labelMedium) },
+                                trailingIcon = if (isSelected) {
+                                    { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.meal_edit_remove), modifier = Modifier.size(14.dp)) }
+                                } else null,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.meal_edit_no_tags),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            // 6. Source URL
+            item {
+                SectionLabel(text = stringResource(R.string.meal_edit_source_label))
+                OutlinedTextField(
+                    value = state.sourceUrl,
+                    onValueChange = viewModel::onSourceUrlChanged,
+                    placeholder = { Text(stringResource(R.string.meal_edit_source_hint)) },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = elegantTextFieldColors(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             // Bottom spacer

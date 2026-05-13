@@ -22,7 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -34,15 +36,15 @@ import androidx.navigation.compose.rememberNavController
  */
 data class BottomNavItem(
     val route: String,
-    val label: String,
+    val labelResId: Int,
     val icon: ImageVector
 )
 
 private val bottomNavItems = listOf(
-    BottomNavItem(Routes.PLANNER, "Tervező", Icons.Default.ViewTimeline),
-    BottomNavItem(Routes.MEAL_LIST, "Ételek", Icons.Default.Restaurant),
-    BottomNavItem(Routes.MENU_HISTORY, "Előzmények", Icons.Default.CalendarMonth),
-    BottomNavItem(Routes.SETTINGS, "Beállítások", Icons.Default.Settings)
+    BottomNavItem(Routes.PLANNER, R.string.nav_planner, Icons.Default.ViewTimeline),
+    BottomNavItem(Routes.MEAL_LIST, R.string.nav_meals, Icons.Default.Restaurant),
+    BottomNavItem(Routes.MENU_HISTORY, R.string.nav_history, Icons.Default.CalendarMonth),
+    BottomNavItem(Routes.SETTINGS, R.string.nav_settings, Icons.Default.Settings)
 )
 
 /**
@@ -83,6 +85,7 @@ fun MainScaffold(
             ) {
                 bottomNavItems.forEach { item ->
                     val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                    val label = stringResource(item.labelResId)
                     NavigationRailItem(
                         selected = selected,
                         onClick = {
@@ -97,10 +100,10 @@ fun MainScaffold(
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.label
+                                contentDescription = label
                             )
                         },
-                        label = { Text(item.label) }
+                        label = { Text(label) }
                     )
                 }
             }
@@ -115,6 +118,7 @@ fun MainScaffold(
                     NavigationBar {
                         bottomNavItems.forEach { item ->
                             val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                            val label = stringResource(item.labelResId)
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = {
@@ -129,10 +133,10 @@ fun MainScaffold(
                                 icon = {
                                     Icon(
                                         imageVector = item.icon,
-                                        contentDescription = item.label
+                                        contentDescription = label
                                     )
                                 },
-                                label = { Text(item.label) }
+                                label = { Text(label) }
                             )
                         }
                     }

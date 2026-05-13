@@ -72,8 +72,9 @@ class MealRepository @Inject constructor(
      */
     suspend fun getRandomMealNotInCooldown(
         cooldown: Int,
-        currentIndex: Int
-    ): MealEntity? = mealDao.getRandomMealNotInCooldown(cooldown, currentIndex)
+        currentIndex: Int,
+        excludeIds: List<Long> = emptyList()
+    ): MealEntity? = mealDao.getRandomMealNotInCooldown(cooldown, currentIndex, excludeIds)
 
     /**
      * Returns one random meal matching the given [tagIds] and not in cooldown.
@@ -82,8 +83,9 @@ class MealRepository @Inject constructor(
     suspend fun getRandomMealNotInCooldownByTags(
         cooldown: Int,
         currentIndex: Int,
-        tagIds: List<Long>
-    ): MealEntity? = mealDao.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds)
+        tagIds: List<Long>,
+        excludeIds: List<Long> = emptyList()
+    ): MealEntity? = mealDao.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds, excludeIds)
 
     /** Increment the [timesCooked] counter and update [lastCompletedMenuIndex]. */
     suspend fun recordMealCooked(mealId: Long, menuCompletionIndex: Int) {

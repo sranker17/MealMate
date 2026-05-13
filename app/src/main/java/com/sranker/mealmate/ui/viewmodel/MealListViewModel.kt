@@ -23,8 +23,10 @@ import javax.inject.Inject
  */
 sealed interface MealListEvent {
     data object AddedToPlan : MealListEvent
+    data object RemovedFromPlan : MealListEvent
     data object AlreadyInPlan : MealListEvent
     data object MenuLocked : MealListEvent
+    data class MealDeleted(val mealWithTags: MealWithTags) : MealListEvent
 }
 
 /**
@@ -122,15 +124,32 @@ class MealListViewModel @Inject constructor(
         _selectedTagIds.value = emptySet()
     }
 
-    /** Delete a meal by its entity. */
+    private var lastDeletedMeal: MealWithTags? = null
+
+    /** Delete a meal by its entity. Saves it for potential undo. */
     fun deleteMeal(mealWithTags: MealWithTags) {
         viewModelScope.launch {
+            lastDeletedMeal = mealWithTags
             mealRepository.deleteMeal(mealWithTags.meal)
+            _events.emit(MealListEvent.MealDeleted(mealWithTags))
+        }
+    }
+
+    /** Undo the last deletion by re-inserting the meal. */
+    fun undoDeleteMeal() {
+        val mealWithTags = lastDeletedMeal ?: return
+        viewModelScope.launch {
+            mealRepository.saveMeal(
+                meal = mealWithTags.meal,
+                ingredients = emptyList(),
+                tagIds = mealWithTags.tags.map { it.id }
+            )
+            lastDeletedMeal = null
         }
     }
 
     /**
-     * Add a meal to the active plan (non-accepted menu).
+     * Add a meal to the active plan (non-accepted menu), or remove if already in plan.
      * Emits a one-shot [MealListEvent] for the UI to show a snackbar.
      */
     fun addToActivePlan(mealId: Long) {
@@ -139,7 +158,8 @@ class MealListViewModel @Inject constructor(
             if (state.isActiveMenuLocked) {
                 _events.emit(MealListEvent.MenuLocked)
             } else if (mealId in state.mealIdsInActivePlan) {
-                _events.emit(MealListEvent.AlreadyInPlan)
+                menuRepository.unpinMealFromActiveMenu(mealId)
+                _events.emit(MealListEvent.RemovedFromPlan)
             } else {
                 menuRepository.addMealToActiveMenu(mealId)
                 _events.emit(MealListEvent.AddedToPlan)

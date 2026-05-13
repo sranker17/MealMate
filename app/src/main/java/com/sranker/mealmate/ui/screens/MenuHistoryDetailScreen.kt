@@ -36,8 +36,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.data.MenuWithMeals
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailViewModel
@@ -47,11 +49,13 @@ import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailViewModel
  *
  * @param viewModel The [MenuHistoryDetailViewModel].
  * @param onBackClick Called to navigate back.
+ * @param onMealClick Called with the meal ID when a meal card is tapped.
  */
 @Composable
 fun MenuHistoryDetailScreen(
     viewModel: MenuHistoryDetailViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onMealClick: (Long) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     var showRenameDialog by remember { mutableStateOf(false) }
@@ -61,12 +65,12 @@ fun MenuHistoryDetailScreen(
     if (showRenameDialog) {
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("Menü átnevezése") },
+            title = { Text(stringResource(R.string.history_rename_title)) },
             text = {
                 OutlinedTextField(
                     value = renameText,
                     onValueChange = { renameText = it },
-                    label = { Text("Menü címe") },
+                    label = { Text(stringResource(R.string.history_rename_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -78,12 +82,12 @@ fun MenuHistoryDetailScreen(
                         showRenameDialog = false
                     }
                 }) {
-                    Text("Mentés")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRenameDialog = false }) {
-                    Text("Mégse")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -100,12 +104,12 @@ fun MenuHistoryDetailScreen(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza",
+                    contentDescription = stringResource(R.string.back),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
-                text = state.menuWithMeals?.menu?.title ?: "Menü Részletei",
+                text = state.menuWithMeals?.menu?.title ?: stringResource(R.string.history_menu_details),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
@@ -117,7 +121,7 @@ fun MenuHistoryDetailScreen(
             }) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "Átnevezés",
+                    contentDescription = stringResource(R.string.history_rename_title),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -130,7 +134,7 @@ fun MenuHistoryDetailScreen(
                     .padding(horizontal = 16.dp, vertical = 32.dp),
                 content = {
                     Text(
-                        text = "Betöltés...",
+                        text = stringResource(R.string.history_loading),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -139,19 +143,19 @@ fun MenuHistoryDetailScreen(
             state.menuWithMeals == null -> {
                 EmptyState(
                     icon = Icons.Default.Restaurant,
-                    message = "A menü nem található"
+                    message = stringResource(R.string.history_menu_not_found)
                 )
             }
             else -> {
                 val menu = state.menuWithMeals!!
-                MenuContent(menu)
+                MenuContent(menu, onMealClick)
             }
         }
     }
 }
 
 @Composable
-private fun MenuContent(menu: MenuWithMeals) {
+private fun MenuContent(menu: MenuWithMeals, onMealClick: (Long) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -171,7 +175,7 @@ private fun MenuContent(menu: MenuWithMeals) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "${menu.meals.size} étel",
+                text = stringResource(R.string.history_meal_count, menu.meals.size),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -182,9 +186,10 @@ private fun MenuContent(menu: MenuWithMeals) {
             color = MaterialTheme.colorScheme.outlineVariant
         )
 
-        // Meal list (read-only)
+        // Meal list (clickable to view details)
         menu.meals.forEach { meal ->
             Card(
+                onClick = { onMealClick(meal.id) },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
@@ -219,4 +224,3 @@ private fun MenuContent(menu: MenuWithMeals) {
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
-
