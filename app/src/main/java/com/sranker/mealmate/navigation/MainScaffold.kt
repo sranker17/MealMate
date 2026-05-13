@@ -58,7 +58,7 @@ private val bottomNavItems = listOf(
 fun MainScaffold(
     windowWidthSizeClass: WindowWidthSizeClass,
     navController: NavHostController = rememberNavController(),
-    content: @Composable (NavHostController) -> Unit
+    content: @Composable (NavHostController, WindowWidthSizeClass) -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -104,7 +104,7 @@ fun MainScaffold(
                     )
                 }
             }
-            content(navController)
+            content(navController, windowWidthSizeClass)
         }
     } else {
         // Phone layout: Scaffold with BottomNavigationBar
@@ -139,7 +139,7 @@ fun MainScaffold(
                 }
             }
         ) { innerPadding ->
-            content(navController)
+            content(navController, windowWidthSizeClass)
         }
     }
 }

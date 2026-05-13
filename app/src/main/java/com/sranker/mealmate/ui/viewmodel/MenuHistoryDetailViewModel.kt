@@ -27,6 +27,7 @@ data class MenuHistoryDetailUiState(
  * ViewModel for the menu history detail screen.
  *
  * Loads a completed menu by its ID from [SavedStateHandle].
+ * Supports renaming the menu title.
  */
 @HiltViewModel
 class MenuHistoryDetailViewModel @Inject constructor(
@@ -56,5 +57,16 @@ class MenuHistoryDetailViewModel @Inject constructor(
             )
         }
     }
-}
 
+    /**
+     * Rename the current menu.
+     *
+     * @param newTitle The new title for the menu.
+     */
+    fun renameMenu(newTitle: String) {
+        viewModelScope.launch {
+            menuRepository.renameMenu(menuId, newTitle.trim())
+            loadMenu()
+        }
+    }
+}

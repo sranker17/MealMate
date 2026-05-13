@@ -174,6 +174,7 @@ fun MealListScreen(
                     MealListItem(
                         mealWithTags = mealWithTags,
                         isInPlan = isInPlan,
+                        isMenuLocked = state.isActiveMenuLocked,
                         onClick = { onMealClick(mealWithTags.meal.id) },
                         onDelete = { onDeleteMeal(mealWithTags) },
                         onAddToPlan = { viewModel.addToActivePlan(mealWithTags.meal.id) }
@@ -197,6 +198,7 @@ fun MealListScreen(
 private fun MealListItem(
     mealWithTags: MealWithTags,
     isInPlan: Boolean,
+    isMenuLocked: Boolean,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onAddToPlan: () -> Unit

@@ -211,7 +211,8 @@ class MealEditViewModel @Inject constructor(
     /**
      * Save the meal to the repository.
      *
-     * Validates the form first. On success, updates [MealEditUiState.savedMealId].
+     * Validates the form first. Checks for duplicate meal names (case-insensitive).
+     * On success, updates [MealEditUiState.savedMealId].
      */
     fun saveMeal() {
         if (!validate()) return
@@ -221,9 +222,19 @@ class MealEditViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = state.copy(isSaving = true)
 
+            // Check for duplicate meal name
+            val trimmedName = state.name.trim()
+            if (mealRepository.isMealNameTaken(trimmedName, state.mealId)) {
+                _uiState.value = _uiState.value.copy(
+                    isSaving = false,
+                    nameError = "Már létezik ilyen nevű étel"
+                )
+                return@launch
+            }
+
             val meal = MealEntity(
                 id = if (state.isEditing) state.mealId else 0,
-                name = state.name.trim(),
+                name = trimmedName,
                 recipe = state.recipe.trim(),
                 servingSize = state.servingSize,
                 sourceUrl = state.sourceUrl.trim()
@@ -247,4 +258,3 @@ class MealEditViewModel @Inject constructor(
         }
     }
 }
-

@@ -66,13 +66,15 @@
     <!-- Menu History -->
     <string name="history_title">Előzmények</string>
     <string name="history_empty">Még nincs befejezett menü</string>
+    <string name="history_rename_title">Menü átnevezése</string>
+    <string name="history_rename_label">Menü címe</string>
 
     <!-- Settings -->
     <string name="settings_title">Beállítások</string>
-    <string name="settings_cooldown">Lehűlés (menük száma)</string>
-    <string name="settings_cooldown_description">Ennyi menünek kell eltelnie, mielőtt egy étel újra ajánlható</string>
-    <string name="settings_reset_cooldowns">Lehűlések visszaállítása</string>
-    <string name="settings_reset_cooldowns_confirm">Biztosan visszaállítod az összes étel lehűlését?</string>
+    <string name="settings_cooldown">Ajánlási szünet (menük száma)</string>
+    <string name="settings_cooldown_description">Ennyi menünek kell elkészülnir, mielőtt egy étel újra ajánlható</string>
+    <string name="settings_reset_cooldowns">Ajánlási szünetek törlése</string>
+    <string name="settings_reset_cooldowns_confirm">Törlöd az ajánlási szüneteket?</string>
     <string name="settings_dark_theme">Sötét téma</string>
     <string name="settings_font_size">Betűméret</string>
     <string name="settings_font_size_small">Kicsi</string>

@@ -9,30 +9,57 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.sranker.mealmate.data.SettingsRepository
 import com.sranker.mealmate.navigation.AppNavGraph
 import com.sranker.mealmate.navigation.MainScaffold
+import com.sranker.mealmate.ui.AccentColor
 import com.sranker.mealmate.ui.MealMateTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
+            val settings by settingsRepository.settings.collectAsState(initial = null)
 
-            MealMateTheme {
+            val accentColor = when (settings?.accentColorName) {
+                "green" -> AccentColor.Green
+                "pink" -> AccentColor.Pink
+                "slate" -> AccentColor.Slate
+                "sky" -> AccentColor.Sky
+                "rose" -> AccentColor.Rose
+                "sand" -> AccentColor.Sand
+                else -> AccentColor.Teal
+            }
+
+            MealMateTheme(
+                accentColor = accentColor,
+                isDarkTheme = settings?.isDarkTheme ?: true,
+                fontSizeScale = settings?.fontSizeScale ?: 1.0f
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainScaffold(
                         windowWidthSizeClass = windowSizeClass.widthSizeClass
-                    ) { navController ->
-                        AppNavGraph(navController = navController)
+                    ) { navController, windowWidthSizeClass ->
+                        AppNavGraph(
+                            navController = navController,
+                            windowWidthSizeClass = windowWidthSizeClass
+                        )
                     }
                 }
             }

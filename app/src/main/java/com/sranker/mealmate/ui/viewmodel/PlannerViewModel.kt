@@ -90,7 +90,7 @@ class PlannerViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     activeMenu = menu,
                     activeMenuCrossRefs = crossRefs,
-                    isAccepted = menu != null && crossRefs.isNotEmpty()
+                    isAccepted = menu?.menu?.isAccepted ?: false
                 )
             }
         }
@@ -252,4 +252,3 @@ class PlannerViewModel @Inject constructor(
 
     // endregion
 }
-

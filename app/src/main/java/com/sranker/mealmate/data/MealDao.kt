@@ -40,6 +40,9 @@ interface MealDao {
     @Query("SELECT * FROM meals WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchMeals(query: String): Flow<List<MealEntity>>
 
+    @Query("SELECT COUNT(*) FROM meals WHERE LOWER(name) = LOWER(:name) AND id != :excludeId")
+    suspend fun countMealsByName(name: String, excludeId: Long = 0): Int
+
     // endregion
 
     // region Meals with Tags
@@ -66,7 +69,10 @@ interface MealDao {
 
     /**
      * Returns a random meal whose [lastCompletedMenuIndex] indicates it was last
-     * completed more than [cooldown] menus ago, or never completed (-1).
+     * completed at least [cooldown] menus ago, or never completed (-1).
+     *
+     * Example: With cooldown = 3, a meal cooked in menu #1 will be blocked until
+     * menu #4 is completed (1 + 3 = 4), at which point `currentIndex - lastIndex >= 3`.
      *
      * @param cooldown The minimum number of completed menus that must have passed
      *   since the meal was last cooked.
@@ -77,7 +83,7 @@ interface MealDao {
         """
         SELECT * FROM meals
         WHERE last_completed_menu_index = -1
-           OR (:currentIndex - last_completed_menu_index) > :cooldown
+           OR (:currentIndex - last_completed_menu_index) >= :cooldown
         ORDER BY RANDOM()
         LIMIT 1
         """
@@ -99,7 +105,7 @@ interface MealDao {
             WHERE tagId IN (:tagIds)
         )
         AND (last_completed_menu_index = -1
-             OR (:currentIndex - last_completed_menu_index) > :cooldown)
+             OR (:currentIndex - last_completed_menu_index) >= :cooldown)
         ORDER BY RANDOM()
         LIMIT 1
         """
@@ -112,4 +118,3 @@ interface MealDao {
 
     // endregion
 }
-

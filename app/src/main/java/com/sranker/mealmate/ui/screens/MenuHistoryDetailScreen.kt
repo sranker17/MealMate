@@ -16,17 +16,24 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,6 +54,40 @@ fun MenuHistoryDetailScreen(
     onBackClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var renameText by remember { mutableStateOf("") }
+
+    // Rename dialog
+    if (showRenameDialog) {
+        AlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text("Menü átnevezése") },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    label = { Text("Menü címe") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (renameText.isNotBlank()) {
+                        viewModel.renameMenu(renameText.trim())
+                        showRenameDialog = false
+                    }
+                }) {
+                    Text("Mentés")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRenameDialog = false }) {
+                    Text("Mégse")
+                }
+            }
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Header
@@ -69,6 +110,17 @@ fun MenuHistoryDetailScreen(
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
             )
+            // Rename button
+            IconButton(onClick = {
+                renameText = state.menuWithMeals?.menu?.title ?: ""
+                showRenameDialog = true
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Átnevezés",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         when {

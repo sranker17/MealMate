@@ -1,9 +1,8 @@
 package com.sranker.mealmate.data
 
+import com.sranker.mealmate.util.formatDateTitle
 import kotlinx.coroutines.flow.Flow
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +35,7 @@ class MenuRepository @Inject constructor(
         val existing = menuDao.getActiveMenu()
         if (existing != null) return existing
 
-        val dateTitle = SimpleDateFormat("yyyy. MM. dd.", Locale.getDefault()).format(Date())
+        val dateTitle = formatDateTitle(Date())
         val newMenu = MenuEntity(title = dateTitle)
         val id = menuDao.insert(newMenu)
         return newMenu.copy(id = id)
@@ -76,10 +75,16 @@ class MenuRepository @Inject constructor(
         val menu = menuDao.getActiveMenu() ?: return false
         val crossRefs = menuDao.getMenuMealCrossRefsForMenu(menu.id)
         if (crossRefs.isEmpty()) return false
-        // Menu is locked simply by the fact that it transitions state.
-        // The `isPinned` flag stays true but the UI will no longer allow changes.
-        // No database change needed — acceptance is a semantic state enforced by the UI.
+        menuDao.acceptActiveMenu()
         return true
+    }
+
+    /**
+     * Returns whether the active menu has been accepted (locked).
+     */
+    suspend fun isActiveMenuAccepted(): Boolean {
+        val menu = menuDao.getActiveMenu() ?: return false
+        return menu.isAccepted
     }
 
     /**
@@ -129,6 +134,16 @@ class MenuRepository @Inject constructor(
 
     /** Get a specific menu with meals by ID. */
     suspend fun getMenuWithMeals(menuId: Long): MenuWithMeals? = menuDao.getMenuWithMeals(menuId)
+
+    /**
+     * Rename a menu (used for giving custom titles to past menus).
+     *
+     * @param menuId The ID of the menu to rename.
+     * @param newTitle The new title for the menu.
+     */
+    suspend fun renameMenu(menuId: Long, newTitle: String) {
+        menuDao.updateMenuTitle(menuId, newTitle)
+    }
 
     /**
      * Returns the [MenuMealCrossRef] rows for the currently active menu,

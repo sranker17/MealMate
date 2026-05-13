@@ -28,7 +28,8 @@ object DatabaseModule {
             context,
             MealMateDatabase::class.java,
             "meal_mate_database"
-        ).build()
+        ).addMigrations(MealMateDatabase.MIGRATION_1_2)
+            .build()
 
     @Provides
     fun provideMealDao(database: MealMateDatabase): MealDao = database.mealDao()
