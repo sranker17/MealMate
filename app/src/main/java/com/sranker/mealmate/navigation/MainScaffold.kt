@@ -1,9 +1,9 @@
 package com.sranker.mealmate.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Restaurant
@@ -24,12 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.sranker.mealmate.R
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.sranker.mealmate.R
 
 /**
  * Represents a single destination in the bottom navigation bar / navigation rail.
@@ -84,7 +84,8 @@ fun MainScaffold(
                 }
             ) {
                 bottomNavItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                    val selected =
+                        currentDestination?.hierarchy?.any { it.route == item.route } == true
                     val label = stringResource(item.labelResId)
                     NavigationRailItem(
                         selected = selected,
@@ -117,7 +118,8 @@ fun MainScaffold(
                 if (isTopLevel) {
                     NavigationBar {
                         bottomNavItems.forEach { item ->
-                            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                            val selected =
+                                currentDestination?.hierarchy?.any { it.route == item.route } == true
                             val label = stringResource(item.labelResId)
                             NavigationBarItem(
                                 selected = selected,
@@ -143,7 +145,11 @@ fun MainScaffold(
                 }
             }
         ) { innerPadding ->
-            content(navController, windowWidthSizeClass)
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)) {
+                content(navController, windowWidthSizeClass)
+            }
         }
     }
 }

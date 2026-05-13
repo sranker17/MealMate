@@ -244,22 +244,96 @@ When the user presses "Accept Menu", any active tag filter (selectedTagIds) shou
 
 ---
 
-## Summary of All Tasks
+## Task B15: Import/Export — Verify and Complete
 
-| #   | Task                                     | Priority | Dependencies    |
-|-----|------------------------------------------|----------|-----------------|
-| B1  | Center-align Pin/Skip buttons            | Low      | None            |
-| B2  | Pin icon on left, change right-side icon | Medium   | None            |
-| B3  | Undo unpinning                           | Medium   | None            |
-| B4  | Skip exclusion until full cycle          | High     | None            |
-| B5  | Reorder meal detail fields               | Medium   | None            |
-| B6  | Show validation errors                   | High     | None            |
-| B7  | Refresh meal detail after edit           | High     | None            |
-| B8  | Delete from detail with undo             | Medium   | None            |
-| B9  | Language selector as dropdown            | Low      | None            |
-| B10 | Sort meals by creation date desc         | High     | DB version bump |
-| B11 | Toast when no recommendations            | Medium   | None            |
-| B12 | Toggle completion state                  | Medium   | None            |
-| B13 | Remove right-side checkmark              | Low      | None            |
-| B14 | Accept menu clears tag filter            | Medium   | None            |
+### Description
+The user reported that import and export functions are missing from the settings interface. Investigation reveals they are **already fully implemented**. This task documents the existing implementation and adds any missing polish.
 
+### Files Involved (already implemented)
+- `app/src/main/java/com/sranker/mealmate/data/BackupRepository.kt` — Core import/export logic with `BackupMeal`, `BackupData` serializable classes
+- `app/src/main/java/com/sranker/mealmate/ui/viewmodel/SettingsViewModel.kt` — `exportToJson()`, `importFromJson()`, `clearMessages()`
+- `app/src/main/java/com/sranker/mealmate/ui/screens/SettingsScreen.kt` — UI buttons with `ActivityResultContracts.GetContent` (import) and `CreateDocument` (export), status messages
+- `app/src/main/java/com/sranker/mealmate/data/MealDao.kt` — `getAllMeals()`, `insert()`
+- `app/src/main/java/com/sranker/mealmate/data/IngredientDao.kt` — `getIngredientsForMealOnce()`, `insertAll()`
+- `app/src/main/java/com/sranker/mealmate/data/TagDao.kt` — `getTagById()`, `getTagByName()`, `insert()`, `insertMealTagCrossRefs()`, `getTagIdsForMeal()`
+- `app/src/test/java/com/sranker/mealmate/data/BackupRepositoryTest.kt` — 250 lines of unit tests covering export, import, duplicate skip, tag auto-creation
+
+### Implementation Details (already done)
+1. **BackupMeal** data class: `name`, `recipe`, `ingredients` (list), `tags` (list), `servingSize`, `sourceUrl`
+2. **BackupData** wrapper: `version`, `list` of `BackupMeal`
+3. **`exportToJson()`**: Fetches all meals from DB → collects tags & ingredients per meal → serializes to JSON with `kotlinx.serialization` (pretty-printed)
+4. **`importFromJson()`**: Deserializes JSON → for each meal: checks duplicate name (case-insensitive, skips if exists), auto-creates missing tags, inserts meal, ingredients, and meal-tag cross-references. **Tags are loaded first** (inserted before meals).
+5. **File picker**: Uses SAF (Storage Access Framework) — `GetContent` for importing, `CreateDocument` for exporting
+6. **Status feedback**: Shows success message with imported meal count on UI
+
+### What to Verify
+1. Open Settings → scroll to bottom → confirm Import (`Importálás` / `Import`) and Export (`Exportálás` / `Export`) buttons exist.
+2. Tap Export → file picker opens with suggested filename `meal_mate_backup.json` → save file.
+3. Open exported file → confirm valid JSON with meal data, tags nested under each meal.
+4. Clear DB or add new device → tap Import → select JSON file → confirm meals + tags appear, and duplicate names are skipped.
+5. Run existing unit tests: `BackupRepositoryTest` (should pass all tests).
+
+### If Any Piece Is Missing (checklist)
+| Sub-component                                           | Status                                                     |
+|---------------------------------------------------------|------------------------------------------------------------|
+| `kotlinx-serialization-json` dependency                 | ✅ Present in `libs.versions.toml` + `app/build.gradle.kts` |
+| Serializable data classes (`BackupMeal`, `BackupData`)  | ✅ Present in `BackupRepository.kt`                         |
+| `exportToJson()` — full DB to JSON                      | ✅ Present                                                  |
+| `importFromJson()` — JSON to DB with tag-first creation | ✅ Present                                                  |
+| File picker (SAF `GetContent` / `CreateDocument`)       | ✅ Present in `SettingsScreen.kt`                           |
+| UI buttons (Import/Export)                              | ✅ Present                                                  |
+| SettingsViewModel bridge                                | ✅ Present                                                  |
+| Status messages                                         | ✅ Present                                                  |
+| Duplicate name skip (case-insensitive)                  | ✅ Present                                                  |
+| Tag auto-creation                                       | ✅ Present                                                  |
+| Unit tests                                              | ✅ Present (250 lines)                                      |
+
+**Conclusion**: The import/export feature is complete and functional. No additional implementation work is needed.
+
+---
+
+## Updated Summary of All Tasks
+
+| #   | Task                                     | Priority                                  | Dependencies    |
+|-----|------------------------------------------|-------------------------------------------|-----------------|
+| B1  | Center-align Pin/Skip buttons            | Low                                       | None            |
+| B2  | Pin icon on left, change right-side icon | Medium                                    | None            |
+| B3  | Undo unpinning                           | Medium                                    | None            |
+| B4  | Skip exclusion until full cycle          | High                                      | None            |
+| B5  | Reorder meal detail fields               | Medium                                    | None            |
+| B6  | Show validation errors                   | High                                      | None            |
+| B7  | Refresh meal detail after edit           | High                                      | None            |
+| B8  | Delete from detail with undo             | Medium                                    | None            |
+| B9  | Language selector as dropdown            | Low                                       | None            |
+| B10 | Sort meals by creation date desc         | High                                      | DB version bump |
+| B11 | Toast when no recommendations            | Medium                                    | None            |
+| B12 | Toggle completion state                  | Medium                                    | None            |
+| B13 | Remove right-side checkmark              | Low                                       | None            |
+| B14 | Accept menu clears tag filter            | Medium                                    | None            |
+| B15 | **Import/Export**                        | ✅ Already implemented — verified complete | None            |
+
+### Actual Bug Found & Fixed
+The buttons existed and the logic was complete, but they were **hidden behind the bottom navigation bar** because `MainScaffold.kt` was not applying `innerPadding` from the `Scaffold` to its content.
+
+**Bug**: In `MainScaffold.kt` (line ~145):
+```kotlin
+// Before (broken):
+Scaffold(bottomBar = { ... }) { innerPadding ->
+    content(navController, windowWidthSizeClass)  // innerPadding ignored!
+}
+```
+
+**Fix**: Wrapped content in a `Box` with the scaffold's padding applied:
+```kotlin
+// After (fixed):
+Scaffold(bottomBar = { ... }) { innerPadding ->
+    Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        content(navController, windowWidthSizeClass)
+    }
+}
+```
+
+### Files Modified
+- `app/src/main/java/com/sranker/mealmate/navigation/MainScaffold.kt` — Added `import androidx.compose.foundation.layout.Box`, wrapped content in `Box(modifier = Modifier.fillMaxSize().padding(innerPadding))` to respect bottom bar insets.
+
+**Import/Export functionality itself is verified complete and working.**
