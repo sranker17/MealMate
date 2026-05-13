@@ -94,4 +94,10 @@
     <string name="no">Nem</string>
     <string name="delete">Törlés</string>
     <string name="save">Mentés</string>
+
+    <!-- Add to Plan (Task 8) -->
+    <string name="meal_add_to_plan">Tervhez adás</string>
+    <string name="meal_added_to_plan">Hozzáadva a heti tervhez</string>
+    <string name="meal_already_in_plan">Már hozzá van adva a heti tervhez</string>
+    <string name="meal_plan_locked">A menü már elfogadásra került</string>
 </resources>

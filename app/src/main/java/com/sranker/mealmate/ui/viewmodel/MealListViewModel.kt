@@ -4,16 +4,28 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sranker.mealmate.data.MealRepository
 import com.sranker.mealmate.data.MealWithTags
+import com.sranker.mealmate.data.MenuRepository
 import com.sranker.mealmate.data.TagEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+/**
+ * One-shot UI events emitted by [MealListViewModel].
+ */
+sealed interface MealListEvent {
+    data object AddedToPlan : MealListEvent
+    data object AlreadyInPlan : MealListEvent
+    data object MenuLocked : MealListEvent
+}
 
 /**
  * UI state for the meal list screen.
@@ -23,13 +35,15 @@ import javax.inject.Inject
  * @property selectedTagIds The set of tag IDs selected as filters.
  * @property allTags All available tags for filter display.
  * @property isLoading Whether the initial load is in progress.
+ * @property mealIdsInActivePlan The set of meal IDs currently in the active (non-accepted) menu.
  */
 data class MealListUiState(
     val meals: List<MealWithTags> = emptyList(),
     val searchQuery: String = "",
     val selectedTagIds: Set<Long> = emptySet(),
     val allTags: List<TagEntity> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val mealIdsInActivePlan: Set<Long> = emptySet()
 )
 
 /**
@@ -37,10 +51,12 @@ data class MealListUiState(
  *
  * Manages searching, tag-based filtering, and observing all meals.
  * Exposes reactive [StateFlow]s for the UI layer.
+ * Supports adding meals directly to the active plan.
  */
 @HiltViewModel
 class MealListViewModel @Inject constructor(
-    private val mealRepository: MealRepository
+    private val mealRepository: MealRepository,
+    private val menuRepository: MenuRepository
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -49,6 +65,10 @@ class MealListViewModel @Inject constructor(
     private val _selectedTagIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedTagIds: StateFlow<Set<Long>> = _selectedTagIds.asStateFlow()
 
+    /** One-shot UI events (snackbar). */
+    private val _events = MutableSharedFlow<MealListEvent>()
+    val events = _events.asSharedFlow()
+
     /** All tags available for filter selection. */
     val allTags: StateFlow<List<TagEntity>> = mealRepository.getAllTags()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -56,8 +76,9 @@ class MealListViewModel @Inject constructor(
     val uiState: StateFlow<MealListUiState> = combine(
         _searchQuery,
         _selectedTagIds,
-        mealRepository.getAllMealsWithTags()
-    ) { query, tagIds, allMeals ->
+        mealRepository.getAllMealsWithTags(),
+        menuRepository.getActiveMenuWithMealsFlow()
+    ) { query, tagIds, allMeals, activeMenu ->
         val filtered = allMeals.filter { withTags ->
             val matchesSearch = query.isBlank() ||
                     withTags.meal.name.contains(query, ignoreCase = true)
@@ -65,12 +86,19 @@ class MealListViewModel @Inject constructor(
                     withTags.tags.any { it.id in tagIds }
             matchesSearch && matchesTags
         }
+        val mealIdsInActivePlan = if (activeMenu != null && !activeMenu.menu.isCompleted) {
+            // We need cross-ref info; use a lookup based on what we know
+            activeMenu.meals.map { it.id }.toSet()
+        } else {
+            emptySet()
+        }
         MealListUiState(
             meals = filtered,
             searchQuery = query,
             selectedTagIds = tagIds,
             allTags = allTags.value,
-            isLoading = false
+            isLoading = false,
+            mealIdsInActivePlan = mealIdsInActivePlan
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, MealListUiState())
 
@@ -95,6 +123,21 @@ class MealListViewModel @Inject constructor(
     fun deleteMeal(mealWithTags: MealWithTags) {
         viewModelScope.launch {
             mealRepository.deleteMeal(mealWithTags.meal)
+        }
+    }
+
+    /**
+     * Add a meal to the active plan (non-accepted menu).
+     * Emits a one-shot [MealListEvent] for the UI to show a snackbar.
+     */
+    fun addToActivePlan(mealId: Long) {
+        viewModelScope.launch {
+            if (mealId in uiState.value.mealIdsInActivePlan) {
+                _events.emit(MealListEvent.AlreadyInPlan)
+            } else {
+                menuRepository.addMealToActiveMenu(mealId)
+                _events.emit(MealListEvent.AddedToPlan)
+            }
         }
     }
 }

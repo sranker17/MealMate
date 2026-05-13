@@ -3,6 +3,8 @@ package com.sranker.mealmate.ui.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.sranker.mealmate.data.MealRepository
 import com.sranker.mealmate.data.MealWithTags
+import com.sranker.mealmate.data.MenuRepository
+import com.sranker.mealmate.data.MenuWithMeals
 import com.sranker.mealmate.data.TagEntity
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -21,13 +23,15 @@ import org.junit.Test
 /**
  * Unit tests for [MealListViewModel].
  *
- * Verifies search filtering, tag filtering, and meal deletion logic.
+ * Verifies search filtering, tag filtering, meal deletion logic,
+ * and add-to-active-plan functionality.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MealListViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private val mealRepository: MealRepository = mockk()
+    private val menuRepository: MenuRepository = mockk()
 
     private lateinit var viewModel: MealListViewModel
 
@@ -57,7 +61,8 @@ class MealListViewModelTest {
         Dispatchers.setMain(testDispatcher)
         coEvery { mealRepository.getAllMealsWithTags() } returns MutableStateFlow(mealsWithTags)
         coEvery { mealRepository.getAllTags() } returns MutableStateFlow(allTags)
-        viewModel = MealListViewModel(mealRepository)
+        coEvery { menuRepository.getActiveMenuWithMealsFlow() } returns MutableStateFlow(null)
+        viewModel = MealListViewModel(mealRepository, menuRepository)
     }
 
     @After
@@ -182,5 +187,39 @@ class MealListViewModelTest {
     }
 
     // endregion
-}
 
+    // region Add to Active Plan
+
+    @Test
+    fun `addToActivePlan emits AddedToPlan event`() = runTest(testDispatcher) {
+        coEvery { menuRepository.addMealToActiveMenu(1L) } returns Unit
+
+        viewModel.addToActivePlan(1L)
+
+        coVerify { menuRepository.addMealToActiveMenu(1L) }
+    }
+
+    @Test
+    fun `addToActivePlan emits AlreadyInPlan when meal already in plan`() = runTest(testDispatcher) {
+        val activeMenu = MenuWithMeals(
+            menu = com.sranker.mealmate.data.MenuEntity(id = 1L, title = "Menu"),
+            meals = listOf(
+                com.sranker.mealmate.data.MealEntity(id = 1L, name = "Chicken Soup")
+            )
+        )
+        coEvery { menuRepository.getActiveMenuWithMealsFlow() } returns MutableStateFlow(activeMenu)
+
+        // Recreate ViewModel to pick up new flow
+        viewModel = MealListViewModel(mealRepository, menuRepository)
+
+        // Wait for state to settle
+        kotlinx.coroutines.delay(100)
+
+        viewModel.addToActivePlan(1L)
+
+        // Should not call addMealToActiveMenu since already in plan
+        coVerify(inverse = true) { menuRepository.addMealToActiveMenu(1L) }
+    }
+
+    // endregion
+}
