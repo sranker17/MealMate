@@ -76,10 +76,16 @@ class MenuRepository @Inject constructor(
         val menu = menuDao.getActiveMenu() ?: return false
         val crossRefs = menuDao.getMenuMealCrossRefsForMenu(menu.id)
         if (crossRefs.isEmpty()) return false
-        // Menu is locked simply by the fact that it transitions state.
-        // The `isPinned` flag stays true but the UI will no longer allow changes.
-        // No database change needed — acceptance is a semantic state enforced by the UI.
+        menuDao.acceptActiveMenu()
         return true
+    }
+
+    /**
+     * Returns whether the active menu has been accepted (locked).
+     */
+    suspend fun isActiveMenuAccepted(): Boolean {
+        val menu = menuDao.getActiveMenu() ?: return false
+        return menu.isAccepted
     }
 
     /**

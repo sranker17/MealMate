@@ -35,6 +35,12 @@ interface MenuDao {
     // region Active Menu
 
     /**
+     * Marks the active menu as accepted (locked).
+     */
+    @Query("UPDATE menus SET is_accepted = 1 WHERE is_completed = 0")
+    suspend fun acceptActiveMenu()
+
+    /**
      * Returns the one menu that is currently not completed (the active planning menu).
      * Since only one active menu exists at a time, this returns at most one result.
      */
@@ -125,4 +131,3 @@ interface MenuDao {
 
     // endregion
 }
-

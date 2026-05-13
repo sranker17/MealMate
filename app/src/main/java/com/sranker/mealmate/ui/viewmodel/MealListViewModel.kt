@@ -36,6 +36,7 @@ sealed interface MealListEvent {
  * @property allTags All available tags for filter display.
  * @property isLoading Whether the initial load is in progress.
  * @property mealIdsInActivePlan The set of meal IDs currently in the active (non-accepted) menu.
+ * @property isActiveMenuLocked Whether the active menu has been accepted (locked).
  */
 data class MealListUiState(
     val meals: List<MealWithTags> = emptyList(),
@@ -43,7 +44,8 @@ data class MealListUiState(
     val selectedTagIds: Set<Long> = emptySet(),
     val allTags: List<TagEntity> = emptyList(),
     val isLoading: Boolean = false,
-    val mealIdsInActivePlan: Set<Long> = emptySet()
+    val mealIdsInActivePlan: Set<Long> = emptySet(),
+    val isActiveMenuLocked: Boolean = false
 )
 
 /**
@@ -98,7 +100,8 @@ class MealListViewModel @Inject constructor(
             selectedTagIds = tagIds,
             allTags = allTags.value,
             isLoading = false,
-            mealIdsInActivePlan = mealIdsInActivePlan
+            mealIdsInActivePlan = mealIdsInActivePlan,
+            isActiveMenuLocked = activeMenu?.menu?.isAccepted ?: false
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, MealListUiState())
 
@@ -132,7 +135,10 @@ class MealListViewModel @Inject constructor(
      */
     fun addToActivePlan(mealId: Long) {
         viewModelScope.launch {
-            if (mealId in uiState.value.mealIdsInActivePlan) {
+            val state = uiState.value
+            if (state.isActiveMenuLocked) {
+                _events.emit(MealListEvent.MenuLocked)
+            } else if (mealId in state.mealIdsInActivePlan) {
                 _events.emit(MealListEvent.AlreadyInPlan)
             } else {
                 menuRepository.addMealToActiveMenu(mealId)

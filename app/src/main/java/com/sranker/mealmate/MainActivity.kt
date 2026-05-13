@@ -31,8 +31,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     MainScaffold(
                         windowWidthSizeClass = windowSizeClass.widthSizeClass
-                    ) { navController ->
-                        AppNavGraph(navController = navController)
+                    ) { navController, windowWidthSizeClass ->
+                        AppNavGraph(
+                            navController = navController,
+                            windowWidthSizeClass = windowWidthSizeClass
+                        )
                     }
                 }
             }

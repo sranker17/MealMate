@@ -27,6 +27,7 @@ import com.sranker.mealmate.ui.viewmodel.MenuHistoryViewModel
 import com.sranker.mealmate.ui.viewmodel.PlannerViewModel
 import com.sranker.mealmate.ui.viewmodel.SettingsViewModel
 import com.sranker.mealmate.ui.viewmodel.TagManageViewModel
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 
 /**
  * Route constants for the MealMate navigation graph.
@@ -50,11 +51,13 @@ object Routes {
  * Main navigation graph for the MealMate app.
  *
  * @param navController The [NavHostController] for navigation.
+ * @param windowWidthSizeClass The current window width class for responsive layouts.
  * @param modifier Optional [Modifier] applied to the [NavHost].
  */
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
+    windowWidthSizeClass: WindowWidthSizeClass,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -73,6 +76,7 @@ fun AppNavGraph(
             val viewModel: PlannerViewModel = hiltViewModel()
             PlannerScreen(
                 viewModel = viewModel,
+                windowWidthSizeClass = windowWidthSizeClass,
                 onNavigateToMeals = { navController.navigate(Routes.MEAL_LIST) }
             )
         }
