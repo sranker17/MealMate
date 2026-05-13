@@ -59,6 +59,10 @@ import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.PlannerViewModel
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.ui.graphics.Color
 
 /**
  * Planner screen — the main interactive screen of the app.
@@ -539,11 +543,69 @@ private fun RecommendationCard(
 /**
  * A single pinned meal card in the active menu.
  *
- * Pre-acceptance: shows pin icon, meal name, and unpin button.
+ * Pre-acceptance: shows pin icon, meal name, unpin button, and supports swipe-to-unpin.
  * Post-acceptance: shows checkbox for completion tracking, meal name, and check icon when done.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PinnedMealCard(
+    mealName: String,
+    isCompleted: Boolean,
+    isAccepted: Boolean,
+    onToggleComplete: () -> Unit,
+    onUnpin: () -> Unit
+) {
+    if (!isAccepted) {
+        val dismissState = rememberSwipeToDismissBoxState(
+            confirmValueChange = { value ->
+                if (value == SwipeToDismissBoxValue.EndToStart) {
+                    onUnpin()
+                    true
+                } else {
+                    false
+                }
+            }
+        )
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(end = 16.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PushPin,
+                        contentDescription = "Kitűzés visszavonása",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            enableDismissFromStartToEnd = false,
+            enableDismissFromEndToStart = true
+        ) {
+            PinnedMealCardContent(
+                mealName = mealName,
+                isCompleted = isCompleted,
+                isAccepted = false,
+                onToggleComplete = onToggleComplete,
+                onUnpin = onUnpin
+            )
+        }
+    } else {
+        PinnedMealCardContent(
+            mealName = mealName,
+            isCompleted = isCompleted,
+            isAccepted = true,
+            onToggleComplete = onToggleComplete,
+            onUnpin = onUnpin
+        )
+    }
+}
+
+@Composable
+private fun PinnedMealCardContent(
     mealName: String,
     isCompleted: Boolean,
     isAccepted: Boolean,

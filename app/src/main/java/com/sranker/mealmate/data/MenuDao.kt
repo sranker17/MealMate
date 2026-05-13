@@ -60,6 +60,12 @@ interface MenuDao {
 
     // region Menu History
 
+    /**
+     * Updates the title of a specific menu.
+     */
+    @Query("UPDATE menus SET title = :title WHERE id = :menuId")
+    suspend fun updateMenuTitle(menuId: Long, title: String)
+
     @Query("SELECT * FROM menus WHERE is_completed = 1 ORDER BY completion_index DESC")
     fun getCompletedMenusFlow(): Flow<List<MenuEntity>>
 

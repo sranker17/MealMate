@@ -122,4 +122,14 @@ class MealRepository @Inject constructor(
 
     /** Delete a tag. */
     suspend fun deleteTag(tag: TagEntity) = tagDao.delete(tag)
+
+    /**
+     * Check if a meal with the given name already exists (case-insensitive).
+     *
+     * @param name The meal name to check.
+     * @param excludeId Optional ID to exclude from the check (for editing).
+     * @return true if a meal with the same name already exists.
+     */
+    suspend fun isMealNameTaken(name: String, excludeId: Long = 0): Boolean =
+        mealDao.countMealsByName(name, excludeId) > 0
 }

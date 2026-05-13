@@ -40,6 +40,9 @@ interface MealDao {
     @Query("SELECT * FROM meals WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchMeals(query: String): Flow<List<MealEntity>>
 
+    @Query("SELECT COUNT(*) FROM meals WHERE LOWER(name) = LOWER(:name) AND id != :excludeId")
+    suspend fun countMealsByName(name: String, excludeId: Long = 0): Int
+
     // endregion
 
     // region Meals with Tags
@@ -115,4 +118,3 @@ interface MealDao {
 
     // endregion
 }
-
