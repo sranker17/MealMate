@@ -8,7 +8,7 @@ A Hungarian-language Android application designed for 6-inch phones and 12-inch 
 - **Meal Properties**: Name, Recipe, Ingredients (list of items), Tags, Times Cooked, Times Skipped, Serving Size, Source Link.
 - **Meal Tags**: Predefined but user-expandable tags for flexible filtering (e.g., pasta, stew, healthy). A meal can have multiple tags.
 - **Recommendation Engine**: Randomly suggests one unpinned meal at a time, respecting user-defined filters (e.g., ingredient or type) and cooldown rules.
-- **Menu Planning**: Pin recommended meals, accept the group to form a planned menu, mark meals as completed.
+- **Menu Planning**: Pin recommended meals, accept the group to form a planned menu, mark meals as completed. Meals can also be added directly to the active (not-yet-accepted) plan from the meal list screen with a single tap.
 - **Menu History**: View past completed menus (date-based, renameable).
 - **Cooldown System**: Configurable "rotation count". A meal cooked in menu $N$ will not be recommended again until menu $N + Cooldown$ is completed.
 - **Import/Export**: Bulk import and export of recipes in JSON format.
@@ -94,7 +94,28 @@ The following tasks are broken down to be fully separable and LLM-digestible. Ev
   - `TagManageScreen`: Simple list with add functionality for predefined tags.
 **Acceptance Criteria**: Screens are responsive (adapt to Tablet/Phone). Form validation works.
 
-### Task 8 — UI: Menu Planning Screen (Main Screen)
+### Task 8 — Feature: Add Meal to Plan Directly from Meal List
+**Context**: Users need a shortcut to manually include a specific meal in the active, not-yet-accepted plan without going through the recommendation engine. This feature extends the `MealListScreen` with a "plan" action and wires it into `PlannerViewModel` and `MenuRepository`.
+**Dependencies**: Task 5 (MealListViewModel), Task 6 (PlannerViewModel & MenuRepository), Task 7 (MealListScreen).
+**Deliverables**:
+- **Repository (`MenuRepository`)**: Add a `addMealToActiveMenu(mealId: Long)` method that inserts a `MenuMealCrossRef` row (with `isPinned = true`, `isCompleted = false`) for the currently active (non-accepted) menu. If no active menu exists, create one first. Must guard against duplicate entries for the same meal in the same menu.
+- **ViewModel (`MealListViewModel`)**: Expose an `addToActivePlan(mealId: Long)` `suspend` function (or a `StateFlow`-backed `UiEvent`) that delegates to `MenuRepository`. Emit a one-shot `UiEvent.AddedToPlan` or `UiEvent.AlreadyInPlan` so the UI can show a confirmation or warning snackbar.
+- **ViewModel (`PlannerViewModel`)**: React to the shared active menu state so the pinned list updates automatically when a meal is added from the meal list screen (no manual refresh needed).
+- **UI (`MealListScreen`)**:
+  - Each meal list item should show an **"Add to Plan" icon button** (e.g., a bookmark/plus icon). The icon must visually reflect whether the meal is already in the active plan (filled vs. outline).
+  - Tapping the button calls `MealListViewModel.addToActivePlan()`.
+  - Display a `Snackbar` with a Hungarian confirmation message on success, or a warning if the meal is already in the active plan.
+  - If the current menu is already accepted (locked), the button must be hidden or disabled with a tooltip explaining why.
+- **Strings (`strings.xml`)**: Add all required Hungarian string resources (button label, snackbar messages, tooltip).
+- **Tests**: Unit-test `MenuRepository.addMealToActiveMenu` (duplicate guard, auto-create menu). Unit-test `MealListViewModel` state transitions for `addToActivePlan`.
+  **Acceptance Criteria**:
+  - A meal can be added to the active plan from the meal list in one tap, without navigating to the planner screen.
+  - The icon state updates reactively — no manual refresh needed.
+  - Adding a meal that is already in the plan shows a warning instead of inserting a duplicate.
+  - The planner screen's pinned list reflects the newly added meal immediately upon navigation.
+  - All UI copy is in Hungarian.
+
+### Task 9 — UI: Menu Planning Screen (Main Screen)
 **Context**: The primary interactive screen of the app.
 **Deliverables**:
 - `PlannerScreen`:
@@ -107,7 +128,7 @@ The following tasks are broken down to be fully separable and LLM-digestible. Ev
   - Once accepted: List changes to show checkboxes. "Finish Menu" button appears when all checked.
 **Acceptance Criteria**: Smooth animations when recommending or pinning meals. Tablet layout optimizes screen real estate (e.g., recommendation card on left, pinned list on right).
 
-### Task 9 — UI: History & Settings Screens
+### Task 10 — UI: History & Settings Screens
 **Context**: Archival and configuration interfaces.
 **Deliverables**:
 - `MenuHistoryScreen`: List of past menus.
@@ -119,7 +140,7 @@ The following tasks are broken down to be fully separable and LLM-digestible. Ev
   - Theme and font size selectors.
 **Acceptance Criteria**: Settings changes reflect immediately. Export/Import triggers appropriate system file pickers.
 
-### Task 10 — Navigation & App Assembly
+### Task 11 — Navigation & App Assembly
 **Context**: Tie everything together with Navigation Compose.
 **Deliverables**:
 - `AppNavGraph.kt`: Define all routes.
@@ -127,7 +148,7 @@ The following tasks are broken down to be fully separable and LLM-digestible. Ev
 - Tie ViewModels to Screens.
 **Acceptance Criteria**: App is fully navigable. Tablet users see a Nav Rail, Phone users see a Bottom Bar.
 
-### Task 11 — Polish & Polish
+### Task 12 — Polish & Polish
 **Context**: Final touch-ups, animations, and app icon.
 **Deliverables**:
 - Add screen transition animations.
