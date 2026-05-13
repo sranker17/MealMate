@@ -129,4 +129,36 @@ class MenuRepository @Inject constructor(
 
     /** Get a specific menu with meals by ID. */
     suspend fun getMenuWithMeals(menuId: Long): MenuWithMeals? = menuDao.getMenuWithMeals(menuId)
+
+    /**
+     * Returns the [MenuMealCrossRef] rows for the currently active menu,
+     * or an empty list if no active menu exists.
+     */
+    suspend fun getActiveMenuCrossRefs(): List<MenuMealCrossRef> {
+        val menu = menuDao.getActiveMenu() ?: return emptyList()
+        return menuDao.getMenuMealCrossRefsForMenu(menu.id)
+    }
+
+    /**
+     * Returns the highest completion index among completed menus,
+     * or 0 if no menus have been completed.
+     */
+    suspend fun getCurrentCompletionIndex(): Int = menuDao.getMaxCompletionIndex() ?: 0
+
+    /**
+     * Add a meal directly to the active menu (pinned) without going through
+     * the recommendation engine. Creates the active menu first if needed.
+     * Guards against duplicate entries for the same meal in the same menu.
+     *
+     * @param mealId The meal to add.
+     */
+    suspend fun addMealToActiveMenu(mealId: Long) {
+        val menu = getOrCreateActiveMenu()
+        val existing = menuDao.getMenuMealCrossRef(menu.id, mealId)
+        if (existing == null) {
+            menuDao.insertMenuMealCrossRef(
+                MenuMealCrossRef(menuId = menu.id, mealId = mealId, isPinned = true)
+            )
+        }
+    }
 }

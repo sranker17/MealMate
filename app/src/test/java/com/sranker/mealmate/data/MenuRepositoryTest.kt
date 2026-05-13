@@ -257,4 +257,81 @@ class MenuRepositoryTest {
     }
 
     // endregion
+
+    // region New Methods for Task 6
+
+    @Test
+    fun `getActiveMenuCrossRefs returns cross refs when active menu exists`() = runTest {
+        val menu = MenuEntity(id = 1L, title = "Menu")
+        val crossRefs = listOf(
+            MenuMealCrossRef(menuId = 1L, mealId = 10L, isPinned = true)
+        )
+        coEvery { menuDao.getActiveMenu() } returns menu
+        coEvery { menuDao.getMenuMealCrossRefsForMenu(1L) } returns crossRefs
+
+        val result = repository.getActiveMenuCrossRefs()
+
+        assertThat(result).isEqualTo(crossRefs)
+    }
+
+    @Test
+    fun `getActiveMenuCrossRefs returns empty when no active menu`() = runTest {
+        coEvery { menuDao.getActiveMenu() } returns null
+
+        val result = repository.getActiveMenuCrossRefs()
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `getCurrentCompletionIndex returns max index from dao`() = runTest {
+        coEvery { menuDao.getMaxCompletionIndex() } returns 10
+
+        val result = repository.getCurrentCompletionIndex()
+
+        assertThat(result).isEqualTo(10)
+    }
+
+    @Test
+    fun `getCurrentCompletionIndex returns 0 when no completed menus`() = runTest {
+        coEvery { menuDao.getMaxCompletionIndex() } returns null
+
+        val result = repository.getCurrentCompletionIndex()
+
+        assertThat(result).isEqualTo(0)
+    }
+
+    @Test
+    fun `addMealToActiveMenu creates menu and inserts cross ref`() = runTest {
+        coEvery { menuDao.getActiveMenu() } returns null
+        coEvery { menuDao.insert(any()) } returns 1L
+        coEvery { menuDao.getMenuMealCrossRef(1L, 42L) } returns null
+        coEvery { menuDao.insertMenuMealCrossRef(any()) } returns Unit
+
+        repository.addMealToActiveMenu(42L)
+
+        coVerify {
+            menuDao.insertMenuMealCrossRef(
+                withArg { ref ->
+                    assertThat(ref.menuId).isEqualTo(1L)
+                    assertThat(ref.mealId).isEqualTo(42L)
+                    assertThat(ref.isPinned).isTrue()
+                }
+            )
+        }
+    }
+
+    @Test
+    fun `addMealToActiveMenu does not insert duplicate`() = runTest {
+        val menu = MenuEntity(id = 1L, title = "Menu")
+        val existing = MenuMealCrossRef(menuId = 1L, mealId = 42L, isPinned = true)
+        coEvery { menuDao.getActiveMenu() } returns menu
+        coEvery { menuDao.getMenuMealCrossRef(1L, 42L) } returns existing
+
+        repository.addMealToActiveMenu(42L)
+
+        coVerify(inverse = true) { menuDao.insertMenuMealCrossRef(any()) }
+    }
+
+    // endregion
 }
