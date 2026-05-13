@@ -89,6 +89,7 @@ dependencies {
 
     // Material
     implementation(libs.material)
+    implementation(libs.androidx.compose.material3.window.size)
 
     // Kotlinx Serialization
     implementation(libs.kotlinx.serialization.json)

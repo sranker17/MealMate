@@ -20,6 +20,7 @@ import org.junit.Test
  */
 class BackupRepositoryTest {
 
+    private val mealRepository: MealRepository = mockk()
     private val mealDao: MealDao = mockk()
     private val tagDao: TagDao = mockk()
     private val ingredientDao: IngredientDao = mockk()
@@ -28,7 +29,7 @@ class BackupRepositoryTest {
 
     @Before
     fun setUp() {
-        repository = BackupRepository(mealDao, tagDao, ingredientDao)
+        repository = BackupRepository(mealRepository, mealDao, tagDao, ingredientDao)
     }
 
     // region Export

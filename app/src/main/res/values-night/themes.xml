@@ -1,8 +1,0 @@
-<resources xmlns:tools="http://www.w3.org/TR/xhtml1/strict">
-    <!-- Night theme — Compose handles theming, so this is kept minimal. -->
-    <style name="Theme.MealMate" parent="android:Theme.Material.NoActionBar">
-        <item name="android:colorBackground">@color/minimalist_background</item>
-        <item name="android:statusBarColor">@color/minimalist_background</item>
-        <item name="android:navigationBarColor">@color/minimalist_background</item>
-    </style>
-</resources>

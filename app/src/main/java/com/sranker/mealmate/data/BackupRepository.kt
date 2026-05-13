@@ -40,6 +40,7 @@ data class BackupData(
  */
 @Singleton
 class BackupRepository @Inject constructor(
+    private val mealRepository: MealRepository,
     private val mealDao: MealDao,
     private val tagDao: TagDao,
     private val ingredientDao: IngredientDao
@@ -59,6 +60,8 @@ class BackupRepository @Inject constructor(
      */
     suspend fun exportToJson(): String {
         val mealsSnapshot = mutableListOf<BackupMeal>()
+
+        // We need a snapshot — use non-flow DAO calls
         val meals = mealDao.getAllMeals()
         meals.forEach { meal ->
             val ingredients = ingredientDao.getIngredientsForMealOnce(meal.id)
@@ -138,7 +141,7 @@ class BackupRepository @Inject constructor(
             }
 
             importedCount++
-            existingNames.add(backupMeal.name.lowercase())
+            existingNames += backupMeal.name.lowercase()
         }
 
         return importedCount

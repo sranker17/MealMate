@@ -7,29 +7,33 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.ui.Modifier
+import com.sranker.mealmate.navigation.AppNavGraph
+import com.sranker.mealmate.navigation.MainScaffold
 import com.sranker.mealmate.ui.MealMateTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * The single-entry [ComponentActivity] for MealMate.
- * Sets up edge-to-edge rendering and hosts the Compose UI tree
- * wrapped in the [MealMateTheme].
- */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
+
             MealMateTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Text(text = "MealMate")
+                    MainScaffold(
+                        windowWidthSizeClass = windowSizeClass.widthSizeClass
+                    ) { navController ->
+                        AppNavGraph(navController = navController)
+                    }
                 }
             }
         }
