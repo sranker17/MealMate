@@ -17,9 +17,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -77,7 +78,8 @@ fun TagManageScreen(
                 is TagManageEvent.TagDeleted -> {
                     val result = snackbarHostState.showSnackbar(
                         message = tagDeletedText,
-                        actionLabel = undoText
+                        actionLabel = undoText,
+                        duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
                         viewModel.undoDeleteTag()
@@ -169,7 +171,7 @@ fun TagManageScreen(
             // Tag list or empty state
             if (state.tags.isEmpty()) {
                 EmptyState(
-                    icon = Icons.AutoMirrored.Filled.Label,
+                    icon = Icons.Default.LocalOffer,
                     message = stringResource(R.string.tag_manage_empty)
                 )
             } else {
@@ -194,7 +196,9 @@ fun TagManageScreen(
                                     onClick = {},
                                     label = { Text(tag.name) },
                                     colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                        containerColor = MaterialTheme.colorScheme.primary.copy(
+                                            alpha = 0.1f
+                                        ),
                                         labelColor = MaterialTheme.colorScheme.primary
                                     ),
                                     modifier = Modifier.weight(1f)

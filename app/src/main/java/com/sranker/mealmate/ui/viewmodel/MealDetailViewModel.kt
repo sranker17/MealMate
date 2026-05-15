@@ -21,7 +21,7 @@ import javax.inject.Inject
  * One-shot events emitted by [MealDetailViewModel].
  */
 sealed interface MealDetailEvent {
-    data class MealDeleted(val mealWithTags: MealWithTags) : MealDetailEvent
+    data object MealDeleted : MealDetailEvent
 }
 
 /**
@@ -63,8 +63,6 @@ class MealDetailViewModel @Inject constructor(
 
     private val _events = MutableSharedFlow<MealDetailEvent>()
     val events: SharedFlow<MealDetailEvent> = _events.asSharedFlow()
-
-    private var lastDeletedMeal: MealWithTags? = null
 
     init {
         if (mealId == -1L) {
@@ -110,26 +108,13 @@ class MealDetailViewModel @Inject constructor(
         loadMeal()
     }
 
-    /** Delete the meal and emit a [MealDetailEvent.MealDeleted] for undo support. */
+    /** Delete the meal, emit a repository-wide undo event, and navigate back. */
     fun deleteMeal() {
         val meal = _uiState.value.mealWithTags ?: return
         viewModelScope.launch {
-            lastDeletedMeal = meal
             mealRepository.deleteMeal(meal.meal)
-            _events.emit(MealDetailEvent.MealDeleted(meal))
-        }
-    }
-
-    /** Undo the last deletion by re-inserting the meal. */
-    fun undoDeleteMeal() {
-        val mealWithTags = lastDeletedMeal ?: return
-        viewModelScope.launch {
-            mealRepository.saveMeal(
-                meal = mealWithTags.meal,
-                ingredients = emptyList(),
-                tagIds = mealWithTags.tags.map { it.id }
-            )
-            lastDeletedMeal = null
+            mealRepository.emitDeleteUndoEvent(meal)
+            _events.emit(MealDetailEvent.MealDeleted)
         }
     }
 }

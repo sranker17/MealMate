@@ -94,12 +94,16 @@ class MealEditViewModel @Inject constructor(
         if (mealId > 0L) {
             loadExistingMeal()
         } else {
-            val initial = MealEditUiState(
-                allTags = allTags.value,
-                ingredients = listOf(IngredientItem(id = 0))
-            )
-            _uiState.value = initial
-            initialStateSnapshot = initial
+            // Load tags asynchronously so we have the real list (not the empty initial value)
+            viewModelScope.launch {
+                val tags = mealRepository.getAllTagsOnce()
+                val initial = MealEditUiState(
+                    allTags = tags,
+                    ingredients = listOf(IngredientItem(id = 0))
+                )
+                _uiState.value = initial
+                initialStateSnapshot = initial
+            }
         }
     }
 

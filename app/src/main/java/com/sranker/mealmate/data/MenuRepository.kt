@@ -184,6 +184,17 @@ class MenuRepository @Inject constructor(
     }
 
     /**
+     * Returns true if loading meals from an archived menu into the planner is allowed.
+     * Loading is blocked when the active menu already has any meals (whether accepted or not).
+     * The current menu must be finished (completed) before archived meals can be loaded.
+     */
+    suspend fun canLoadIntoPlanner(): Boolean {
+        val menu = menuDao.getActiveMenu() ?: return true // No active menu = safe to load
+        val crossRefs = menuDao.getMenuMealCrossRefsForMenu(menu.id)
+        return crossRefs.isEmpty() // Only allow if no meals in the active menu
+    }
+
+    /**
      * Load all meals from a completed (archived) menu into the current active menu.
      * Each meal is added as a pinned entry in the active menu.
      * Duplicates are automatically skipped (meals already in the active menu are not re-added).

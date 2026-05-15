@@ -18,6 +18,7 @@ import javax.inject.Inject
 /** One-shot events emitted by [MenuHistoryDetailViewModel]. */
 sealed interface MenuHistoryDetailEvent {
     data class LoadedIntoPlanner(val messageResId: Int) : MenuHistoryDetailEvent
+    data class LoadIntoPlannerBlocked(val messageResId: Int) : MenuHistoryDetailEvent
 }
 
 /**
@@ -82,11 +83,19 @@ class MenuHistoryDetailViewModel @Inject constructor(
     }
 
     /**
-     * Load this menu's meals into the active planner menu.
-     * Emits a [MenuHistoryDetailEvent.LoadedIntoPlanner] on completion.
+     * Check if loading into planner is allowed, then load.
+     * If not allowed, emits a [MenuHistoryDetailEvent.LoadIntoPlannerBlocked] event.
      */
     fun loadIntoPlanner() {
         viewModelScope.launch {
+            if (!menuRepository.canLoadIntoPlanner()) {
+                _events.emit(
+                    MenuHistoryDetailEvent.LoadIntoPlannerBlocked(
+                        messageResId = com.sranker.mealmate.R.string.history_load_blocked
+                    )
+                )
+                return@launch
+            }
             menuRepository.loadMenuIntoPlanner(menuId)
             _events.emit(
                 MenuHistoryDetailEvent.LoadedIntoPlanner(

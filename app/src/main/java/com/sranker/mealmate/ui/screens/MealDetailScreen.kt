@@ -30,17 +30,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -70,33 +65,17 @@ fun MealDetailScreen(
     onDeleteClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // Capture strings before LaunchedEffect (not a composable context)
-    val deletedText = stringResource(R.string.meal_list_deleted)
-    val undoText = stringResource(R.string.meal_list_undo)
 
     // Refresh data when screen is composed (handles returning from edit)
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
 
-    // Consume one-shot events (delete with undo)
+    // Consume one-shot events — navigate back on delete
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is MealDetailEvent.MealDeleted -> {
-                    val result = snackbarHostState.showSnackbar(
-                        message = deletedText,
-                        actionLabel = undoText,
-                        duration = SnackbarDuration.Short
-                    )
-                    if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.undoDeleteMeal()
-                    } else {
-                        onDeleteClick()
-                    }
-                }
+                MealDetailEvent.MealDeleted -> onDeleteClick()
             }
         }
     }
@@ -196,14 +175,6 @@ fun MealDetailScreen(
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = meal.meal.recipe.ifBlank { stringResource(R.string.meal_detail_no_recipe) },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (meal.meal.recipe.isBlank())
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            else
-                                MaterialTheme.colorScheme.onSurface
-                        )
 
                         // 2. Ingredients (moved up)
                         HorizontalDivider(
@@ -344,11 +315,6 @@ fun MealDetailScreen(
                 }
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
 }
 

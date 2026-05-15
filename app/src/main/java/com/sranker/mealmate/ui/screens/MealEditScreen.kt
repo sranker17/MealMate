@@ -1,5 +1,6 @@
 package com.sranker.mealmate.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,16 +55,6 @@ import com.sranker.mealmate.ui.viewmodel.MealEditViewModel
 
 private val roundedShape = RoundedCornerShape(12.dp)
 
-/**
- * Meal edit/create screen with elegant, minimalistic styling.
- *
- * Shows a form with fields for name, recipe, ingredients, tags, serving size,
- * and source URL. Handles both creating new meals and editing existing ones.
- *
- * @param viewModel The [MealEditViewModel] providing form state.
- * @param onBackClick Called to navigate back.
- * @param onMealSaved Called after the meal is successfully saved, with the new meal ID.
- */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MealEditScreen(
@@ -83,6 +73,15 @@ fun MealEditScreen(
 
     // Unsaved changes dialog
     var showUnsavedDialog by remember { mutableStateOf(false) }
+
+    // Intercept system back button to check for unsaved changes
+    BackHandler(enabled = true) {
+        if (viewModel.hasUnsavedChanges()) {
+            showUnsavedDialog = true
+        } else {
+            onBackClick()
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Header
@@ -132,14 +131,14 @@ fun MealEditScreen(
         // Form content
         LazyColumn(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Name
+            // 1. Name with SectionLabel
             item {
+                SectionLabel(text = stringResource(R.string.meal_edit_name_label))
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = viewModel::onNameChanged,
-                    label = { Text(stringResource(R.string.meal_edit_name_label)) },
                     placeholder = { Text(stringResource(R.string.meal_edit_name_hint)) },
                     isError = state.nameError != null || state.nameErrorResId != null,
                     supportingText = when {
@@ -204,13 +203,8 @@ fun MealEditScreen(
                 )
             }
 
-            // 4. Ingredients section
+            // 4. Ingredients section (no divider anymore)
             item {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    thickness = 0.5.dp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
                 SectionLabel(text = stringResource(R.string.meal_edit_ingredients_label))
             }
 

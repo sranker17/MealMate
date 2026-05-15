@@ -29,6 +29,21 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    override fun attachBaseContext(newBase: Context) {
+        val language = pendingLanguage
+        val context = if (language != null && language != "system") {
+            val locale = Locale.forLanguageTag(language)
+            Locale.setDefault(locale)
+            val config = Configuration(newBase.resources.configuration).apply {
+                setLocale(locale)
+            }
+            newBase.createConfigurationContext(config)
+        } else {
+            newBase
+        }
+        super.attachBaseContext(context)
+    }
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,15 +90,13 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun applyLanguage(lang: String) {
-        val locale = when (lang) {
-            "hu" -> Locale("hu")
-            "en" -> Locale("en")
-            else -> return // "system" — use device default
+        if (lang != pendingLanguage) {
+            pendingLanguage = lang
+            recreate()
         }
-        Locale.setDefault(locale)
-        val config = Configuration(resources.configuration).apply {
-            setLocale(locale)
-        }
-        resources.updateConfiguration(config, resources.displayMetrics)
+    }
+
+    companion object {
+        private var pendingLanguage: String? = null
     }
 }

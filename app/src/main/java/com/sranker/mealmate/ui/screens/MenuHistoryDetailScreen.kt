@@ -51,8 +51,8 @@ import androidx.compose.ui.unit.dp
 import com.sranker.mealmate.R
 import com.sranker.mealmate.data.MenuWithMeals
 import com.sranker.mealmate.ui.components.EmptyState
-import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailViewModel
 import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailEvent
+import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailViewModel
 
 private val roundedShape = RoundedCornerShape(12.dp)
 
@@ -63,13 +63,15 @@ private val roundedShape = RoundedCornerShape(12.dp)
  * @param onBackClick Called to navigate back.
  * @param onMealClick Called with the meal ID when a meal card is tapped.
  * @param onLoadIntoPlanner Called to load this menu's meals into the active planner.
+ * @param onNavigateToPlanner Called to navigate to the planner screen after successful load.
  */
 @Composable
 fun MenuHistoryDetailScreen(
     viewModel: MenuHistoryDetailViewModel,
     onBackClick: () -> Unit,
     onMealClick: (Long) -> Unit = {},
-    onLoadIntoPlanner: (Long) -> Unit = {}
+    onLoadIntoPlanner: (Long) -> Unit = {},
+    onNavigateToPlanner: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,14 +80,22 @@ fun MenuHistoryDetailScreen(
 
     // Capture strings before LaunchedEffect
     val loadedIntoPlannerText = stringResource(R.string.history_loaded_into_planner)
+    val loadBlockedText = stringResource(R.string.history_load_blocked)
 
-    // Snackbar when loaded into planner
+    // Snackbar when loaded into planner or blocked
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is MenuHistoryDetailEvent.LoadedIntoPlanner -> {
                     snackbarHostState.showSnackbar(
                         message = loadedIntoPlannerText
+                    )
+                    onNavigateToPlanner()
+                }
+
+                is MenuHistoryDetailEvent.LoadIntoPlannerBlocked -> {
+                    snackbarHostState.showSnackbar(
+                        message = loadBlockedText
                     )
                 }
             }
@@ -146,7 +156,8 @@ fun MenuHistoryDetailScreen(
                     )
                 }
                 Text(
-                    text = state.menuWithMeals?.menu?.title ?: stringResource(R.string.history_menu_details),
+                    text = state.menuWithMeals?.menu?.title
+                        ?: stringResource(R.string.history_menu_details),
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
@@ -177,12 +188,14 @@ fun MenuHistoryDetailScreen(
                         )
                     }
                 )
+
                 state.menuWithMeals == null -> {
                     EmptyState(
                         icon = Icons.Default.Restaurant,
                         message = stringResource(R.string.history_menu_not_found)
                     )
                 }
+
                 else -> {
                     val menu = state.menuWithMeals!!
 

@@ -26,6 +26,7 @@ sealed interface MealListEvent {
     data object RemovedFromPlan : MealListEvent
     data object AlreadyInPlan : MealListEvent
     data object MenuLocked : MealListEvent
+    data class MealDeleted(val mealWithTags: MealWithTags) : MealListEvent
 }
 
 /**
@@ -71,6 +72,15 @@ class MealListViewModel @Inject constructor(
     /** One-shot UI events (snackbar). */
     private val _events = MutableSharedFlow<MealListEvent>()
     val events = _events.asSharedFlow()
+
+    /** Pending delete-undo event, persisted across back-stack navigation. */
+    private val _pendingUndoDeleteMeal = MutableStateFlow<MealWithTags?>(null)
+    val pendingUndoDeleteMeal: StateFlow<MealWithTags?> = _pendingUndoDeleteMeal.asStateFlow()
+
+    /** Consume the pending delete event (called after showing the snackbar). */
+    fun consumePendingDelete() {
+        _pendingUndoDeleteMeal.value = null
+    }
 
     /** All tags available for filter selection. */
     val allTags: StateFlow<List<TagEntity>> = mealRepository.getAllTags()
@@ -138,6 +148,29 @@ class MealListViewModel @Inject constructor(
             } else {
                 menuRepository.addMealToActiveMenu(mealId)
                 _events.emit(MealListEvent.AddedToPlan)
+            }
+        }
+    }
+
+    /** Undo the last deletion by re-inserting the meal with its tags. */
+    fun undoDeleteMeal(mealWithTags: MealWithTags) {
+        viewModelScope.launch {
+            // Use a fresh copy with id=0 so Room inserts instead of silently failing on update
+            val restoredMeal = mealWithTags.meal.copy(id = 0L)
+            mealRepository.saveMeal(
+                meal = restoredMeal,
+                ingredients = emptyList(),
+                tagIds = mealWithTags.tags.map { it.id }
+            )
+        }
+    }
+
+    init {
+        // Collect repository-wide delete-undo events (from MealDetailScreen)
+        // Use a StateFlow so the event persists across back-stack navigation.
+        viewModelScope.launch {
+            mealRepository.deleteUndoEvents.collect { mealWithTags ->
+                _pendingUndoDeleteMeal.value = mealWithTags
             }
         }
     }

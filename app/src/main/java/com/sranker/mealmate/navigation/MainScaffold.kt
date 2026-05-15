@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewTimeline
@@ -41,8 +40,8 @@ data class BottomNavItem(
 )
 
 private val bottomNavItems = listOf(
-    BottomNavItem(Routes.PLANNER, R.string.nav_planner, Icons.Default.ViewTimeline),
     BottomNavItem(Routes.MEAL_LIST, R.string.nav_meals, Icons.Default.Restaurant),
+    BottomNavItem(Routes.PLANNER, R.string.nav_planner, Icons.Default.ViewTimeline),
     BottomNavItem(Routes.SETTINGS, R.string.nav_settings, Icons.Default.Settings)
 )
 
@@ -144,9 +143,11 @@ fun MainScaffold(
                 }
             }
         ) { innerPadding ->
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
                 content(navController, windowWidthSizeClass)
             }
         }

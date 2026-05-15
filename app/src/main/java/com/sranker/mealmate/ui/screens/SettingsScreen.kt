@@ -216,6 +216,7 @@ fun SettingsScreen(
                 val message = when {
                     state.importResultResId != null && state.importResultArg != null ->
                         stringResource(state.importResultResId!!, state.importResultArg!!)
+
                     state.importResultResId != null -> stringResource(state.importResultResId!!)
                     else -> state.importResult ?: ""
                 }
@@ -447,7 +448,9 @@ private fun LanguageDropdown(selectedLanguage: String, onLanguageSelected: (Stri
     val options = listOf(
         "system" to stringResource(R.string.settings_language_system),
         "hu" to stringResource(R.string.settings_language_hungarian),
-        "en" to stringResource(R.string.settings_language_english)
+        "en" to stringResource(R.string.settings_language_english),
+        "de" to stringResource(R.string.settings_language_german),
+        "es" to stringResource(R.string.settings_language_spanish)
     )
     val label = options.firstOrNull { it.first == selectedLanguage }?.second
         ?: stringResource(R.string.settings_language_system)
