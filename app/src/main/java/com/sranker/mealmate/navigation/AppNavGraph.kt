@@ -3,6 +3,7 @@ package com.sranker.mealmate.navigation
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -27,7 +28,6 @@ import com.sranker.mealmate.ui.viewmodel.MenuHistoryViewModel
 import com.sranker.mealmate.ui.viewmodel.PlannerViewModel
 import com.sranker.mealmate.ui.viewmodel.SettingsViewModel
 import com.sranker.mealmate.ui.viewmodel.TagManageViewModel
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 
 /**
  * Route constants for the MealMate navigation graph.
@@ -77,7 +77,6 @@ fun AppNavGraph(
             PlannerScreen(
                 viewModel = viewModel,
                 windowWidthSizeClass = windowWidthSizeClass,
-                onNavigateToMeals = { navController.navigate(Routes.MEAL_LIST) },
                 onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) }
             )
         }
@@ -124,7 +123,9 @@ fun AppNavGraph(
         // region Meal Edit
         composable(
             route = Routes.MEAL_EDIT,
-            arguments = listOf(navArgument("mealId") { type = NavType.LongType; defaultValue = 0L }),
+            arguments = listOf(navArgument("mealId") {
+                type = NavType.LongType; defaultValue = 0L
+            }),
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) },
             popEnterTransition = { fadeIn(animationSpec = tween(300)) },

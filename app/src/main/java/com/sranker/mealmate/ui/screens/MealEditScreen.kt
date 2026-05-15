@@ -122,9 +122,22 @@ fun MealEditScreen(
                     onValueChange = viewModel::onNameChanged,
                     label = { Text(stringResource(R.string.meal_edit_name_label)) },
                     placeholder = { Text(stringResource(R.string.meal_edit_name_hint)) },
-                    isError = state.nameError != null,
-                    supportingText = state.nameError?.let { error ->
-                        { Text(error, color = MaterialTheme.colorScheme.error) }
+                    isError = state.nameError != null || state.nameErrorResId != null,
+                    supportingText = when {
+                        state.nameErrorResId != null -> {
+                            {
+                                Text(
+                                    stringResource(state.nameErrorResId!!),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+
+                        state.nameError != null -> {
+                            { Text(state.nameError!!, color = MaterialTheme.colorScheme.error) }
+                        }
+
+                        else -> null
                     },
                     singleLine = true,
                     shape = MaterialTheme.shapes.medium,
@@ -206,7 +219,10 @@ fun MealEditScreen(
             item {
                 OutlinedButton(
                     onClick = viewModel::onAddIngredient,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -246,12 +262,25 @@ fun MealEditScreen(
                             FilterChip(
                                 selected = isSelected,
                                 onClick = { viewModel.onTagToggled(tag.id) },
-                                label = { Text(tag.name, style = MaterialTheme.typography.labelMedium) },
+                                label = {
+                                    Text(
+                                        tag.name,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                },
                                 trailingIcon = if (isSelected) {
-                                    { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.meal_edit_remove), modifier = Modifier.size(14.dp)) }
+                                    {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = stringResource(R.string.meal_edit_remove),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(
+                                        alpha = 0.15f
+                                    ),
                                     selectedLabelColor = MaterialTheme.colorScheme.primary
                                 )
                             )

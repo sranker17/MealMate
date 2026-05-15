@@ -88,9 +88,22 @@ fun TagManageScreen(
                 value = state.newTagName,
                 onValueChange = viewModel::onNewTagNameChanged,
                 placeholder = { Text(stringResource(R.string.tag_manage_add_hint)) },
-                isError = state.errorMessage != null,
-                supportingText = state.errorMessage?.let { error ->
-                    { Text(error, color = MaterialTheme.colorScheme.error) }
+                isError = state.errorMessage != null || state.errorMessageResId != null,
+                supportingText = when {
+                    state.errorMessageResId != null -> {
+                        {
+                            Text(
+                                stringResource(state.errorMessageResId!!),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+
+                    state.errorMessage != null -> {
+                        { Text(state.errorMessage!!, color = MaterialTheme.colorScheme.error) }
+                    }
+
+                    else -> null
                 },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(

@@ -138,7 +138,8 @@ class MealEditViewModelTest {
         viewModel.saveMeal()
 
         val state = viewModel.uiState.value
-        assertThat(state.nameError).isEqualTo("A név megadása kötelező")
+        assertThat(state.nameError).isNull()
+        assertThat(state.nameErrorResId).isEqualTo(com.sranker.mealmate.R.string.meal_edit_name_required)
         assertThat(state.savedMealId).isNull()
     }
 

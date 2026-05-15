@@ -97,7 +97,8 @@ class MealDetailViewModelTest {
         val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
 
         val state = viewModel.uiState.value
-        assertThat(state.errorMessage).isNotNull()
+        assertThat(state.errorMessage).isNull()
+        assertThat(state.errorMessageResId).isEqualTo(com.sranker.mealmate.R.string.meal_detail_not_found)
         assertThat(state.mealWithTags).isNull()
     }
 
@@ -107,7 +108,8 @@ class MealDetailViewModelTest {
         val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
 
         val state = viewModel.uiState.value
-        assertThat(state.errorMessage).isEqualTo("Étel nem található")
+        assertThat(state.errorMessage).isNull()
+        assertThat(state.errorMessageResId).isEqualTo(com.sranker.mealmate.R.string.meal_detail_not_found)
     }
 
     // endregion

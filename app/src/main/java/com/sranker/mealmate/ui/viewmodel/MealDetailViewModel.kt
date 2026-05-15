@@ -30,12 +30,14 @@ sealed interface MealDetailEvent {
  * @property mealWithIngredients The meal with its ingredients, or null if loading/not found.
  * @property isLoading Whether the meal data is still loading.
  * @property errorMessage An error message if the meal could not be loaded.
+ * @property errorMessageResId A string resource ID for the error message, or null.
  */
 data class MealDetailUiState(
     val mealWithTags: MealWithTags? = null,
     val mealWithIngredients: MealWithIngredients? = null,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val errorMessageResId: Int? = null
 )
 
 /**
@@ -62,7 +64,10 @@ class MealDetailViewModel @Inject constructor(
 
     init {
         if (mealId == -1L) {
-            _uiState.value = MealDetailUiState(errorMessage = "Étel nem található")
+            _uiState.value = MealDetailUiState(
+                errorMessage = null,
+                errorMessageResId = com.sranker.mealmate.R.string.meal_detail_not_found
+            )
         } else {
             loadMeal()
         }
@@ -76,7 +81,8 @@ class MealDetailViewModel @Inject constructor(
 
             if (withTags == null) {
                 _uiState.value = MealDetailUiState(
-                    errorMessage = "Étel nem található",
+                    errorMessage = null,
+                    errorMessageResId = com.sranker.mealmate.R.string.meal_detail_not_found,
                     isLoading = false
                 )
             } else {

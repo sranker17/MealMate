@@ -1,7 +1,6 @@
 package com.sranker.mealmate.ui.screens
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,27 +30,28 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.components.EmptyState
-import com.sranker.mealmate.ui.viewmodel.MealDetailViewModel
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import com.sranker.mealmate.ui.viewmodel.MealDetailEvent
+import com.sranker.mealmate.ui.viewmodel.MealDetailViewModel
 
 /**
  * Meal detail screen displaying all properties, stats, tags, ingredients,
@@ -156,12 +156,17 @@ fun MealDetailScreen(
                         )
                     }
                 }
-                state.errorMessage != null -> {
+
+                state.errorMessage != null || state.errorMessageResId != null -> {
                     EmptyState(
                         icon = Icons.Default.Restaurant,
-                        message = state.errorMessage ?: stringResource(R.string.meal_detail_error)
+                        message = when {
+                            state.errorMessageResId != null -> stringResource(state.errorMessageResId!!)
+                            else -> state.errorMessage!!
+                        }
                     )
                 }
+
                 else -> {
                     val meal = state.mealWithTags ?: return
                     Column(
@@ -186,7 +191,9 @@ fun MealDetailScreen(
                                         onClick = {},
                                         label = { Text(tag.name) },
                                         colors = AssistChipDefaults.assistChipColors(
-                                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                            containerColor = MaterialTheme.colorScheme.primary.copy(
+                                                alpha = 0.1f
+                                            ),
                                             labelColor = MaterialTheme.colorScheme.primary
                                         )
                                     )
@@ -206,7 +213,8 @@ fun MealDetailScreen(
                             val context = LocalContext.current
                             TextButton(
                                 onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(meal.meal.sourceUrl))
+                                    val intent =
+                                        Intent(Intent.ACTION_VIEW, meal.meal.sourceUrl.toUri())
                                     context.startActivity(intent)
                                 }
                             ) {

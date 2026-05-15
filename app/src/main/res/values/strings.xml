@@ -91,6 +91,8 @@
     <string name="tag_manage_add_hint">Új címke…</string>
     <string name="tag_manage_add">Hozzáadás</string>
     <string name="tag_manage_empty">Még nincsenek címkék</string>
+    <string name="tag_manage_name_required">A címke neve nem lehet üres</string>
+    <string name="tag_manage_duplicate_name">Már létezik ilyen nevű címke</string>
 
     <!-- Menu History -->
     <string name="history_title">Előzmények</string>
@@ -99,7 +101,7 @@
     <string name="history_rename_label">Menü címe</string>
     <string name="history_meal_count">%d étel</string>
     <string name="history_menu_details">Menü Részletei</string>
-    <string name="history_loading">Betöltés...</string>
+    <string name="history_loading">Betöltés…</string>
     <string name="history_menu_not_found">A menü nem található</string>
 
     <!-- Settings -->

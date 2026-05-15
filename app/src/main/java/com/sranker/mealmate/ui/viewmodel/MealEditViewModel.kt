@@ -210,7 +210,10 @@ class MealEditViewModel @Inject constructor(
         val state = _uiState.value
         val name = state.name.trim()
         if (name.isBlank()) {
-            _uiState.value = state.copy(nameError = "A név megadása kötelező")
+            _uiState.value = state.copy(
+                nameError = null,
+                nameErrorResId = com.sranker.mealmate.R.string.meal_edit_name_required
+            )
             return false
         }
         return true
@@ -235,7 +238,8 @@ class MealEditViewModel @Inject constructor(
             if (mealRepository.isMealNameTaken(trimmedName, state.mealId)) {
                 _uiState.value = _uiState.value.copy(
                     isSaving = false,
-                    nameError = "Már létezik ilyen nevű étel"
+                    nameError = null,
+                    nameErrorResId = com.sranker.mealmate.R.string.meal_edit_duplicate_name
                 )
                 return@launch
             }

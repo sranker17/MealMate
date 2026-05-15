@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -37,18 +36,19 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,13 +64,8 @@ import com.sranker.mealmate.R
 import com.sranker.mealmate.data.MealWithTags
 import com.sranker.mealmate.data.TagEntity
 import com.sranker.mealmate.ui.components.EmptyState
-import com.sranker.mealmate.ui.viewmodel.PlannerViewModel
 import com.sranker.mealmate.ui.viewmodel.PlannerEvent
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarResult
-import kotlinx.coroutines.launch
+import com.sranker.mealmate.ui.viewmodel.PlannerViewModel
 
 /**
  * Planner screen — the main interactive screen of the app.
@@ -84,7 +79,6 @@ import kotlinx.coroutines.launch
  *
  * @param viewModel The [PlannerViewModel] providing UI state.
  * @param windowWidthSizeClass The [WindowWidthSizeClass] of the screen.
- * @param onNavigateToMeals Called to navigate to the meal list (empty state guidance).
  * @param onMealClick Called with the meal ID when a pinned meal card is tapped.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,12 +86,10 @@ import kotlinx.coroutines.launch
 fun PlannerScreen(
     viewModel: PlannerViewModel,
     windowWidthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
-    onNavigateToMeals: () -> Unit,
     onMealClick: (Long) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     var showFilterSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Capture strings before LaunchedEffect (not a composable context)
@@ -119,6 +111,7 @@ fun PlannerScreen(
                         viewModel.undoUnpinMeal(event.mealId)
                     }
                 }
+
                 is PlannerEvent.NoRecommendationAvailable -> {
                     snackbarHostState.showSnackbar(
                         message = noRecommendationText,
@@ -426,6 +419,7 @@ private fun RecommendedMealCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(stringResource(R.string.planner_skip))
                 }
+                Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = onPin,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -559,14 +553,8 @@ private fun PinnedMealCard(
 ) {
     if (!isAccepted) {
         val dismissState = rememberSwipeToDismissBoxState(
-            confirmValueChange = { value ->
-                if (value == SwipeToDismissBoxValue.EndToStart) {
-                    onUnpin()
-                    true
-                } else {
-                    false
-                }
-            }
+            SwipeToDismissBoxValue.Settled,
+            SwipeToDismissBoxDefaults.positionalThreshold
         )
         SwipeToDismissBox(
             state = dismissState,

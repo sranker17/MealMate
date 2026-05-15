@@ -19,12 +19,14 @@ import javax.inject.Inject
  * @property tags All available tags.
  * @property newTagName The text in the "add new tag" field.
  * @property errorMessage An error message for invalid input or duplicates.
+ * @property errorMessageResId A string resource ID for the error message, or null.
  * @property isLoading Whether the tags are still loading.
  */
 data class TagManageUiState(
     val tags: List<TagEntity> = emptyList(),
     val newTagName: String = "",
     val errorMessage: String? = null,
+    val errorMessageResId: Int? = null,
     val isLoading: Boolean = false
 )
 
@@ -61,7 +63,8 @@ class TagManageViewModel @Inject constructor(
     fun onNewTagNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(
             newTagName = name,
-            errorMessage = null
+            errorMessage = null,
+            errorMessageResId = null
         )
     }
 
@@ -75,14 +78,16 @@ class TagManageViewModel @Inject constructor(
 
         if (name.isBlank()) {
             _uiState.value = _uiState.value.copy(
-                errorMessage = "A címke neve nem lehet üres"
+                errorMessage = null,
+                errorMessageResId = com.sranker.mealmate.R.string.tag_manage_name_required
             )
             return
         }
 
         if (_uiState.value.tags.any { it.name.equals(name, ignoreCase = true) }) {
             _uiState.value = _uiState.value.copy(
-                errorMessage = "Már létezik ilyen nevű címke"
+                errorMessage = null,
+                errorMessageResId = com.sranker.mealmate.R.string.tag_manage_duplicate_name
             )
             return
         }

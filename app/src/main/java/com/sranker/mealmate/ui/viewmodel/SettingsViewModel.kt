@@ -17,13 +17,17 @@ import javax.inject.Inject
  * UI state for the settings screen.
  *
  * @property settings The current settings values.
- * @property importResult Message to show after an import operation, or null.
- * @property exportResult Message to show after an export operation, or null.
+ * @property importResultResId String resource ID for the import result message, or null.
+ * @property exportResultResId String resource ID for the export result message, or null.
+ * @property importResultArg Optional integer argument for the import result string (e.g. meal count).
  */
 data class SettingsUiState(
     val settings: Settings = Settings(),
     val importResult: String? = null,
-    val exportResult: String? = null
+    val exportResult: String? = null,
+    val importResultResId: Int? = null,
+    val exportResultResId: Int? = null,
+    val importResultArg: Int? = null
 )
 
 /**
@@ -82,7 +86,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val json = backupRepository.exportToJson()
             callback(json)
-            _uiState.value = _uiState.value.copy(exportResult = "Exportálás sikeres")
+            _uiState.value = _uiState.value.copy(
+                exportResult = null,
+                exportResultResId = com.sranker.mealmate.R.string.settings_export_success
+            )
         }
     }
 
@@ -93,12 +100,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val count = backupRepository.importFromJson(content)
             _uiState.value = _uiState.value.copy(
-                importResult = "Sikeresen importálva: $count étel"
+                importResult = null,
+                importResultResId = com.sranker.mealmate.R.string.settings_import_success,
+                importResultArg = count
             )
         }
-    }
-
-    fun clearMessages() {
-        _uiState.value = _uiState.value.copy(importResult = null, exportResult = null)
     }
 }

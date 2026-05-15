@@ -85,7 +85,8 @@ fun SettingsScreen(
                 val content = reader?.readText() ?: ""
                 reader?.close()
                 viewModel.importFromJson(content)
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            }
         }
     }
 
@@ -98,24 +99,24 @@ fun SettingsScreen(
                     context.contentResolver.openOutputStream(it)?.use { os ->
                         os.write(json.toByteArray())
                     }
-                } catch (_: Exception) { }
+                } catch (_: Exception) {
+                }
             }
         }
     }
 
     if (showResetCooldownDialog) {
         androidx.compose.material3.AlertDialog(
-            onDismissRequest = { showResetCooldownDialog = false },
+            onDismissRequest = { },
             title = { Text(stringResource(R.string.settings_reset_cooldowns_confirm)) },
             text = { Text(stringResource(R.string.settings_reset_cooldowns_description)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.resetCooldowns()
-                    showResetCooldownDialog = false
                 }) { Text(stringResource(R.string.yes)) }
             },
             dismissButton = {
-                TextButton(onClick = { showResetCooldownDialog = false }) {
+                TextButton(onClick = { }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -124,51 +125,109 @@ fun SettingsScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
-            Text(text = stringResource(R.string.settings_title), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.settings_title),
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f)
+            )
         }
 
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            settingCooldownCard(state.settings.cooldown, viewModel)
-            settingDarkThemeCard(state.settings.isDarkTheme, viewModel)
-            settingFontSizeCard(state.settings.fontSizeScale, viewModel)
-            settingAccentColorCard(state.settings.accentColorName, viewModel)
-            settingLanguageCard(state.settings.language, viewModel)
+            SettingCooldownCard(state.settings.cooldown, viewModel)
+            SettingDarkThemeCard(state.settings.isDarkTheme, viewModel)
+            SettingFontSizeCard(state.settings.fontSizeScale, viewModel)
+            SettingAccentColorCard(state.settings.accentColorName, viewModel)
+            SettingLanguageCard(state.settings.language, viewModel)
 
-            OutlinedButton(onClick = { showResetCooldownDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+            OutlinedButton(onClick = { }, modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_reset_cooldowns))
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = { importLauncher.launch("application/json") }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { importLauncher.launch("application/json") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.FileUpload,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(stringResource(R.string.settings_import))
                 }
-                OutlinedButton(onClick = { exportLauncher.launch("meal_mate_backup.json") }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                OutlinedButton(
+                    onClick = { exportLauncher.launch("meal_mate_backup.json") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.FileDownload,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(stringResource(R.string.settings_export))
                 }
             }
 
-            if (state.importResult != null) {
-                Text(text = state.importResult ?: "", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            if (state.importResult != null || state.importResultResId != null) {
+                val message = when {
+                    state.importResultResId != null && state.importResultArg != null ->
+                        stringResource(state.importResultResId!!, state.importResultArg!!)
+
+                    state.importResultResId != null -> stringResource(state.importResultResId!!)
+                    else -> state.importResult ?: ""
+                }
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
-            if (state.exportResult != null) {
-                Text(text = state.exportResult ?: "", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            if (state.exportResult != null || state.exportResultResId != null) {
+                val message = when {
+                    state.exportResultResId != null -> stringResource(state.exportResultResId!!)
+                    else -> state.exportResult ?: ""
+                }
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -177,19 +236,38 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun settingCooldownCard(cooldown: Int, viewModel: SettingsViewModel) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
+private fun SettingCooldownCard(cooldown: Int, viewModel: SettingsViewModel) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = stringResource(R.string.settings_cooldown), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                text = stringResource(R.string.settings_cooldown),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = stringResource(R.string.settings_cooldown_description), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = stringResource(R.string.settings_cooldown_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Spacer(modifier = Modifier.height(12.dp))
             var text by remember(cooldown) { mutableStateOf(cooldown.toString()) }
             OutlinedTextField(
-                value = text, onValueChange = { v -> text = v; v.toIntOrNull()?.let { if (it >= 1) viewModel.setCooldown(it) } },
-                label = { Text(stringResource(R.string.settings_cooldown)) }, placeholder = { Text("3") },
-                singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outline),
+                value = text,
+                onValueChange = { v ->
+                    text = v; v.toIntOrNull()?.let { if (it >= 1) viewModel.setCooldown(it) }
+                },
+                label = { Text(stringResource(R.string.settings_cooldown)) },
+                placeholder = { Text("3") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -197,30 +275,69 @@ private fun settingCooldownCard(cooldown: Int, viewModel: SettingsViewModel) {
 }
 
 @Composable
-private fun settingDarkThemeCard(isDark: Boolean, viewModel: SettingsViewModel) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = if (isDark) Icons.Default.DarkMode else Icons.Default.LightMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+private fun SettingDarkThemeCard(isDark: Boolean, viewModel: SettingsViewModel) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = if (isDark) Icons.Default.DarkMode else Icons.Default.LightMode,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
             Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) { Text(text = stringResource(R.string.settings_dark_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface) }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.settings_dark_theme),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
             Switch(checked = isDark, onCheckedChange = viewModel::setDarkTheme)
         }
     }
 }
 
 @Composable
-private fun settingFontSizeCard(scale: Float, viewModel: SettingsViewModel) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
+private fun SettingFontSizeCard(scale: Float, viewModel: SettingsViewModel) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.TextFields, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                Icon(
+                    Icons.Default.TextFields,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(text = stringResource(R.string.settings_font_size), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    text = stringResource(R.string.settings_font_size),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
             Spacer(modifier = Modifier.height(12.dp))
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                listOf(stringResource(R.string.settings_font_size_small) to 0.85f, stringResource(R.string.settings_font_size_medium) to 1.0f, stringResource(R.string.settings_font_size_large) to 1.25f).forEachIndexed { index, (label, value) ->
-                    SegmentedButton(selected = scale == value, onClick = { viewModel.setFontSizeScale(value) }, shape = SegmentedButtonDefaults.itemShape(index = index, count = 3)) { Text(label, style = MaterialTheme.typography.labelMedium) }
+                listOf(
+                    stringResource(R.string.settings_font_size_small) to 0.85f,
+                    stringResource(R.string.settings_font_size_medium) to 1.0f,
+                    stringResource(R.string.settings_font_size_large) to 1.25f
+                ).forEachIndexed { index, (label, value) ->
+                    SegmentedButton(
+                        selected = scale == value,
+                        onClick = { viewModel.setFontSizeScale(value) },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 3)
+                    ) { Text(label, style = MaterialTheme.typography.labelMedium) }
                 }
             }
         }
@@ -228,21 +345,61 @@ private fun settingFontSizeCard(scale: Float, viewModel: SettingsViewModel) {
 }
 
 @Composable
-private fun settingAccentColorCard(currentName: String, viewModel: SettingsViewModel) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
+private fun SettingAccentColorCard(currentName: String, viewModel: SettingsViewModel) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                Icon(
+                    Icons.Default.Palette,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(text = stringResource(R.string.settings_accent_color), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    text = stringResource(R.string.settings_accent_color),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                listOf("teal" to Color(0xFF00897B), "green" to Color(0xFF2E7D32), "pink" to Color(0xFFC2185B), "slate" to Color(0xFF546E7A), "sky" to Color(0xFF0277BD), "rose" to Color(0xFFAD1457), "sand" to Color(0xFFA1887F)).forEach { (name, color) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    "teal" to Color(0xFF00897B),
+                    "green" to Color(0xFF2E7D32),
+                    "pink" to Color(0xFFC2185B),
+                    "slate" to Color(0xFF546E7A),
+                    "sky" to Color(0xFF0277BD),
+                    "rose" to Color(0xFFAD1457),
+                    "sand" to Color(0xFFA1887F)
+                ).forEach { (name, color) ->
                     val sel = currentName == name
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { viewModel.setAccentColor(name) }.padding(4.dp)) {
-                        Box(modifier = Modifier.size(36.dp).background(color = color, shape = CircleShape).then(if (sel) Modifier.padding(0.dp) else Modifier.padding(3.dp)))
-                        Text(text = name.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable { viewModel.setAccentColor(name) }
+                            .padding(4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(color = color, shape = CircleShape)
+                                .then(if (sel) Modifier.padding(0.dp) else Modifier.padding(3.dp))
+                        )
+                        Text(
+                            text = name.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -251,12 +408,22 @@ private fun settingAccentColorCard(currentName: String, viewModel: SettingsViewM
 }
 
 @Composable
-private fun settingLanguageCard(language: String, viewModel: SettingsViewModel) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
+private fun SettingLanguageCard(language: String, viewModel: SettingsViewModel) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = stringResource(R.string.settings_language), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                text = stringResource(R.string.settings_language),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Spacer(modifier = Modifier.height(12.dp))
-            LanguageDropdown(selectedLanguage = language, onLanguageSelected = viewModel::setLanguage)
+            LanguageDropdown(
+                selectedLanguage = language,
+                onLanguageSelected = viewModel::setLanguage
+            )
         }
     }
 }
@@ -264,16 +431,33 @@ private fun settingLanguageCard(language: String, viewModel: SettingsViewModel) 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LanguageDropdown(selectedLanguage: String, onLanguageSelected: (String) -> Unit) {
-    val options = listOf("system" to stringResource(R.string.settings_language_system), "hu" to stringResource(R.string.settings_language_hungarian), "en" to stringResource(R.string.settings_language_english))
-    val label = options.firstOrNull { it.first == selectedLanguage }?.second ?: stringResource(R.string.settings_language_system)
+    val options = listOf(
+        "system" to stringResource(R.string.settings_language_system),
+        "hu" to stringResource(R.string.settings_language_hungarian),
+        "en" to stringResource(R.string.settings_language_english)
+    )
+    val label = options.firstOrNull { it.first == selectedLanguage }?.second
+        ?: stringResource(R.string.settings_language_system)
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-        OutlinedTextField(value = label, onValueChange = {}, readOnly = true, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }, colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(), modifier = Modifier.menuAnchor().fillMaxWidth())
-        androidx.compose.material3.DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        OutlinedTextField(
+            value = label,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        androidx.compose.material3.DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }) {
             options.forEach { (value, text) ->
-                DropdownMenuItem(text = { Text(text) }, onClick = { onLanguageSelected(value); expanded = false })
+                DropdownMenuItem(
+                    text = { Text(text) },
+                    onClick = { onLanguageSelected(value); expanded = false })
             }
         }
     }
 }
-

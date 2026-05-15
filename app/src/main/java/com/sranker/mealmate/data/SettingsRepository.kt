@@ -15,14 +15,14 @@ import javax.inject.Singleton
  * Data class holding all user-configurable settings values.
  *
  * @property cooldown The number of completed menus that must pass before a meal
- *   can be recommended again. Default is 3.
+ *   can be recommended again. Default is 4.
  * @property isDarkTheme Whether the dark theme is enabled.
  * @property fontSizeScale Scale factor for font sizing (1.0 = default).
  * @property accentColorName The name of the accent color to use.
  * @property language The language setting ("system", "hu", or "en").
  */
 data class Settings(
-    val cooldown: Int = 3,
+    val cooldown: Int = 4,
     val isDarkTheme: Boolean = true,
     val fontSizeScale: Float = 1.0f,
     val accentColorName: String = "teal",
@@ -50,7 +50,7 @@ class SettingsRepository @Inject constructor(
     /** Observe all settings as a single [Settings] data object. */
     val settings: Flow<Settings> = dataStore.data.map { prefs ->
         Settings(
-            cooldown = prefs[KEY_COOLDOWN] ?: 3,
+            cooldown = prefs[KEY_COOLDOWN] ?: 4,
             isDarkTheme = prefs[KEY_DARK_THEME] ?: true,
             fontSizeScale = (prefs[KEY_FONT_SIZE_SCALE]?.toFloatOrNull()) ?: 1.0f,
             accentColorName = prefs[KEY_ACCENT_COLOR] ?: "teal",

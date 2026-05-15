@@ -91,6 +91,8 @@
     <string name="tag_manage_add_hint">New tag\u2026</string>
     <string name="tag_manage_add">Add</string>
     <string name="tag_manage_empty">No tags yet</string>
+    <string name="tag_manage_name_required">Tag name cannot be empty</string>
+    <string name="tag_manage_duplicate_name">A tag with this name already exists</string>
 
     <!-- Menu History -->
     <string name="history_title">History</string>
@@ -99,7 +101,7 @@
     <string name="history_rename_label">Menu title</string>
     <string name="history_meal_count">%d meals</string>
     <string name="history_menu_details">Menu Details</string>
-    <string name="history_loading">Loading...</string>
+    <string name="history_loading">Loading…</string>
     <string name="history_menu_not_found">Menu not found</string>
 
     <!-- Settings -->
