@@ -85,6 +85,10 @@
     <string name="meal_edit_remove">Remove</string>
     <string name="meal_edit_no_tags">No tags yet. Create tags in the Tags page.</string>
     <string name="meal_edit_duplicate_name">A meal with this name already exists</string>
+    <string name="meal_edit_unsaved_title">Unsaved changes</string>
+    <string name="meal_edit_unsaved_message">You have unsaved changes. What would you like to do?</string>
+    <string name="meal_edit_save_exit">Save and exit</string>
+    <string name="meal_edit_discard_exit">Discard and exit</string>
 
     <!-- Tag Management -->
     <string name="tag_manage_title">Manage Tags</string>
@@ -93,6 +97,8 @@
     <string name="tag_manage_empty">No tags yet</string>
     <string name="tag_manage_name_required">Tag name cannot be empty</string>
     <string name="tag_manage_duplicate_name">A tag with this name already exists</string>
+    <string name="tag_manage_deleted">Tag deleted</string>
+    <string name="tag_manage_undo">Undo</string>
 
     <!-- Menu History -->
     <string name="history_title">History</string>
@@ -103,6 +109,8 @@
     <string name="history_menu_details">Menu Details</string>
     <string name="history_loading">Loading…</string>
     <string name="history_menu_not_found">Menu not found</string>
+    <string name="history_load_into_planner">Load into planner</string>
+    <string name="history_loaded_into_planner">Meals loaded into planner</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -128,6 +136,15 @@
     <string name="settings_language_hungarian">Magyar</string>
     <string name="settings_language_english">English</string>
 
+    <!-- Color names -->
+    <string name="color_teal">Teal</string>
+    <string name="color_green">Green</string>
+    <string name="color_pink">Pink</string>
+    <string name="color_slate">Slate</string>
+    <string name="color_sky">Sky</string>
+    <string name="color_rose">Rose</string>
+    <string name="color_sand">Sand</string>
+
     <!-- General -->
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -143,4 +160,5 @@
     <string name="meal_added_to_plan">Added to weekly plan</string>
     <string name="meal_already_in_plan">Already in weekly plan</string>
     <string name="meal_plan_locked">The menu has already been accepted</string>
+    <string name="planner_load_archived">Load archived menu</string>
 </resources>

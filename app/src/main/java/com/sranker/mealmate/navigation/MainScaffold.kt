@@ -43,7 +43,6 @@ data class BottomNavItem(
 private val bottomNavItems = listOf(
     BottomNavItem(Routes.PLANNER, R.string.nav_planner, Icons.Default.ViewTimeline),
     BottomNavItem(Routes.MEAL_LIST, R.string.nav_meals, Icons.Default.Restaurant),
-    BottomNavItem(Routes.MENU_HISTORY, R.string.nav_history, Icons.Default.CalendarMonth),
     BottomNavItem(Routes.SETTINGS, R.string.nav_settings, Icons.Default.Settings)
 )
 

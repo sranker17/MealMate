@@ -106,4 +106,15 @@ class SettingsViewModel @Inject constructor(
             )
         }
     }
+
+    /** Clear import/export result messages. */
+    fun clearResults() {
+        _uiState.value = _uiState.value.copy(
+            importResult = null,
+            exportResult = null,
+            importResultResId = null,
+            exportResultResId = null,
+            importResultArg = null
+        )
+    }
 }

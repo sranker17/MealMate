@@ -9,7 +9,7 @@
     <string name="nav_settings">Beállítások</string>
 
     <!-- Planner Screen -->
-    <string name="planner_title">Heti Tervező</string>
+    <string name="planner_title">Heti tervező</string>
     <string name="planner_empty_title">Még nincs étel az adatbázisban</string>
     <string name="planner_empty_message">Adj hozzá ételeket az Ételek menüpontban, hogy elkezdhesd a tervezést!</string>
     <string name="planner_recommend">Ajánlás</string>
@@ -30,7 +30,7 @@
     <string name="planner_recommended">Ajánlott</string>
     <string name="planner_filter_by_tags">Szűrés címkék szerint</string>
     <string name="planner_clear">Törlés</string>
-    <string name="planner_meal_unpinned">Étel kitűzése visszavonva</string>
+    <string name="planner_meal_unpinned">Étel kitűzés visszavonva</string>
     <string name="planner_undo">Visszavonás</string>
 
     <!-- Meal List Screen -->
@@ -138,6 +138,15 @@
     <string name="settings_language_system">Rendszer</string>
     <string name="settings_language_hungarian">Magyar</string>
     <string name="settings_language_english">English</string>
+
+    <!-- Color names -->
+    <string name="color_teal">Kékeszöld</string>
+    <string name="color_green">Zöld</string>
+    <string name="color_pink">Rózsaszín</string>
+    <string name="color_slate">Palaszürke</string>
+    <string name="color_sky">Égkék</string>
+    <string name="color_rose">Rózsapiros</string>
+    <string name="color_sand">Homok</string>
 
     <!-- General -->
     <string name="ok">OK</string>

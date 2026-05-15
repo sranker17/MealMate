@@ -50,6 +50,10 @@ import com.sranker.mealmate.data.MealWithTags
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MealListEvent
 import com.sranker.mealmate.ui.viewmodel.MealListViewModel
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 
 /**
  * Meal list screen with search bar, tag filter chips, scrollable meal list,
@@ -140,7 +144,12 @@ fun MealListScreen(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+                capitalization = KeyboardCapitalization.Sentences
+            )
         )
 
         // Filter chips

@@ -186,6 +186,7 @@ fun AppNavGraph(
                 onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) },
                 onLoadIntoPlanner = {
                     viewModel.loadIntoPlanner()
+                    navController.popBackStack(Routes.PLANNER, inclusive = false)
                 }
             )
         }

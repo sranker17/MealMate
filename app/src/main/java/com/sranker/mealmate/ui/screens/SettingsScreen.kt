@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -104,6 +106,11 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    // Clear import/export result messages when screen is entered
+    LaunchedEffect(Unit) {
+        viewModel.clearResults()
     }
 
     if (showResetCooldownDialog) {
@@ -267,6 +274,7 @@ private fun SettingCooldownCard(cooldown: Int, viewModel: SettingsViewModel) {
                 label = { Text(stringResource(R.string.settings_cooldown)) },
                 placeholder = { Text("3") },
                 singleLine = true,
+                shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -378,14 +386,15 @@ private fun SettingAccentColorCard(currentName: String, viewModel: SettingsViewM
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 listOf(
-                    "teal" to AccentColor.Teal.darkPrimary,
-                    "green" to AccentColor.Green.darkPrimary,
-                    "pink" to AccentColor.Pink.darkPrimary,
-                    "slate" to AccentColor.Slate.darkPrimary,
-                    "sky" to AccentColor.Sky.darkPrimary,
-                    "rose" to AccentColor.Rose.darkPrimary,
-                    "sand" to AccentColor.Sand.darkPrimary
-                ).forEach { (name, color) ->
+                    "teal" to AccentColor.Teal.darkPrimary to R.string.color_teal,
+                    "green" to AccentColor.Green.darkPrimary to R.string.color_green,
+                    "pink" to AccentColor.Pink.darkPrimary to R.string.color_pink,
+                    "slate" to AccentColor.Slate.darkPrimary to R.string.color_slate,
+                    "sky" to AccentColor.Sky.darkPrimary to R.string.color_sky,
+                    "rose" to AccentColor.Rose.darkPrimary to R.string.color_rose,
+                    "sand" to AccentColor.Sand.darkPrimary to R.string.color_sand
+                ).forEach { (nameColor, colorNameRes) ->
+                    val (name, color) = nameColor
                     val sel = currentName == name
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -400,7 +409,7 @@ private fun SettingAccentColorCard(currentName: String, viewModel: SettingsViewM
                                 .then(if (sel) Modifier.padding(0.dp) else Modifier.padding(3.dp))
                         )
                         Text(
-                            text = name.replaceFirstChar { it.uppercase() },
+                            text = stringResource(colorNameRes),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
