@@ -99,7 +99,7 @@ class BackupRepositoryTest {
         """.trimIndent()
 
         coEvery { mealDao.getAllMeals() } returns emptyList()
-        coEvery { tagDao.getTagByName("Basic") } returns null
+        coEvery { tagDao.getTagByNameIgnoreCase("Basic") } returns null
         coEvery { tagDao.insert(TagEntity(name = "Basic")) } returns 1L
         coEvery { mealDao.insert(any()) } returns 42L
         coEvery { ingredientDao.insertAll(any()) } returns Unit
@@ -178,8 +178,8 @@ class BackupRepositoryTest {
         """.trimIndent()
 
         coEvery { mealDao.getAllMeals() } returns emptyList()
-        coEvery { tagDao.getTagByName("Spicy") } returns null
-        coEvery { tagDao.getTagByName("Noodles") } returns null
+        coEvery { tagDao.getTagByNameIgnoreCase("Spicy") } returns null
+        coEvery { tagDao.getTagByNameIgnoreCase("Noodles") } returns null
         coEvery { tagDao.insert(TagEntity(name = "Spicy")) } returns 10L
         coEvery { tagDao.insert(TagEntity(name = "Noodles")) } returns 11L
         coEvery { mealDao.insert(any()) } returns 1L
@@ -215,7 +215,7 @@ class BackupRepositoryTest {
         """.trimIndent()
 
         coEvery { mealDao.getAllMeals() } returns emptyList()
-        coEvery { tagDao.getTagByName("Soup") } returns TagEntity(id = 5L, name = "Soup")
+        coEvery { tagDao.getTagByNameIgnoreCase("Soup") } returns TagEntity(id = 5L, name = "Soup")
         coEvery { mealDao.insert(any()) } returns 1L
         coEvery { ingredientDao.insertAll(any()) } returns Unit
         coEvery { tagDao.insertMealTagCrossRefs(any()) } returns Unit

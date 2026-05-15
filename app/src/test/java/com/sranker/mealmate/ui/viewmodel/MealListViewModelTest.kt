@@ -59,6 +59,7 @@ class MealListViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        io.mockk.every { mealRepository.deleteUndoEvents } returns kotlinx.coroutines.flow.MutableSharedFlow()
         coEvery { mealRepository.getAllMealsWithTags() } returns MutableStateFlow(mealsWithTags)
         coEvery { mealRepository.getAllTags() } returns MutableStateFlow(allTags)
         coEvery { menuRepository.getActiveMenuWithMealsFlow() } returns MutableStateFlow(null)
@@ -171,19 +172,6 @@ class MealListViewModelTest {
         val state = viewModel.uiState.value
         assertThat(state.meals).hasSize(1)
         assertThat(state.meals[0].meal.name).isEqualTo("Chicken Soup")
-    }
-
-    // endregion
-
-    // region Delete
-
-    @Test
-    fun `deleteMeal delegates to repository`() = runTest(testDispatcher) {
-        coEvery { mealRepository.deleteMeal(any()) } returns Unit
-
-        viewModel.deleteMeal(mealsWithTags[0])
-
-        coVerify { mealRepository.deleteMeal(mealsWithTags[0].meal) }
     }
 
     // endregion

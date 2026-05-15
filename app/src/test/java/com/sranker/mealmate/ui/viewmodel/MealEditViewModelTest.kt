@@ -41,6 +41,7 @@ class MealEditViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         coEvery { mealRepository.getAllTags() } returns MutableStateFlow(allTags)
+        coEvery { mealRepository.getAllTagsOnce() } returns allTags
     }
 
     @After
