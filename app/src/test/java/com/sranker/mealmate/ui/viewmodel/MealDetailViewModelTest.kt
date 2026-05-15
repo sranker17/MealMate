@@ -7,6 +7,7 @@ import com.sranker.mealmate.data.MealEntity
 import com.sranker.mealmate.data.MealRepository
 import com.sranker.mealmate.data.MealWithIngredients
 import com.sranker.mealmate.data.MealWithTags
+import com.sranker.mealmate.data.MenuRepository
 import com.sranker.mealmate.data.TagEntity
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -30,6 +31,7 @@ class MealDetailViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private val mealRepository: MealRepository = mockk()
+    private val menuRepository: MenuRepository = mockk()
 
     private val mealWithTags = MealWithTags(
         meal = MealEntity(id = 1L, name = "Test Meal", recipe = "Recipe text"),
@@ -47,6 +49,7 @@ class MealDetailViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        coEvery { menuRepository.getActiveMenuCrossRefs() } returns emptyList()
     }
 
     @After
@@ -62,7 +65,7 @@ class MealDetailViewModelTest {
         coEvery { mealRepository.getMealWithIngredients(1L) } returns mealWithIngredients
 
         val savedStateHandle = SavedStateHandle(mapOf("mealId" to 1L))
-        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
+        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository, menuRepository)
 
         val state = viewModel.uiState.value
         assertThat(state.isLoading).isFalse()
@@ -77,7 +80,7 @@ class MealDetailViewModelTest {
         coEvery { mealRepository.getMealWithIngredients(1L) } returns null
 
         val savedStateHandle = SavedStateHandle(mapOf("mealId" to 1L))
-        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
+        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository, menuRepository)
 
         val state = viewModel.uiState.value
         assertThat(state.mealWithTags).isEqualTo(mealWithTags)
@@ -94,7 +97,7 @@ class MealDetailViewModelTest {
         coEvery { mealRepository.getMealWithIngredients(1L) } returns null
 
         val savedStateHandle = SavedStateHandle(mapOf("mealId" to 1L))
-        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
+        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository, menuRepository)
 
         val state = viewModel.uiState.value
         assertThat(state.errorMessage).isNull()
@@ -105,7 +108,7 @@ class MealDetailViewModelTest {
     @Test
     fun `shows error when mealId is invalid`() = runTest(testDispatcher) {
         val savedStateHandle = SavedStateHandle(mapOf("mealId" to -1L))
-        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
+        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository, menuRepository)
 
         val state = viewModel.uiState.value
         assertThat(state.errorMessage).isNull()
@@ -122,7 +125,7 @@ class MealDetailViewModelTest {
         coEvery { mealRepository.getMealWithIngredients(1L) } returns mealWithIngredients
 
         val savedStateHandle = SavedStateHandle(mapOf("mealId" to 1L))
-        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository)
+        val viewModel = MealDetailViewModel(savedStateHandle, mealRepository, menuRepository)
 
         // Simulate updated data
         val updatedTags = mealWithTags.copy(
