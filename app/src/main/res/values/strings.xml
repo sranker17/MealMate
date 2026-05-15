@@ -19,6 +19,7 @@
     <string name="planner_accept_menu">Menü elfogadása</string>
     <string name="planner_finish_menu">Menü befejezése</string>
     <string name="planner_no_recommendation">Nincs megjeleníthető ajánlás</string>
+    <string name="planner_no_recommendation_toast">Nincs több ajánlható étel</string>
     <string name="planner_filter">Szűrők</string>
     <string name="planner_pinned_meals">Kitűzött ételek</string>
     <string name="planner_meal_cooked">Elkészítve</string>
@@ -29,6 +30,8 @@
     <string name="planner_recommended">Ajánlott</string>
     <string name="planner_filter_by_tags">Szűrés címkék szerint</string>
     <string name="planner_clear">Törlés</string>
+    <string name="planner_meal_unpinned">Étel kitűzése visszavonva</string>
+    <string name="planner_undo">Visszavonás</string>
 
     <!-- Meal List Screen -->
     <string name="meal_list_title">Ételek</string>

@@ -38,6 +38,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -63,6 +65,12 @@ import com.sranker.mealmate.data.MealWithTags
 import com.sranker.mealmate.data.TagEntity
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.PlannerViewModel
+import com.sranker.mealmate.ui.viewmodel.PlannerEvent
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
+import kotlinx.coroutines.launch
 
 /**
  * Planner screen — the main interactive screen of the app.
@@ -90,114 +98,97 @@ fun PlannerScreen(
     val state by viewModel.uiState.collectAsState()
     var showFilterSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Capture strings before LaunchedEffect (not a composable context)
+    val mealUnpinnedText = stringResource(R.string.planner_meal_unpinned)
+    val undoText = stringResource(R.string.planner_undo)
+    val noRecommendationText = stringResource(R.string.planner_no_recommendation_toast)
+
+    // Consume one-shot events (snackbar)
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is PlannerEvent.MealUnpinned -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = mealUnpinnedText,
+                        actionLabel = undoText,
+                        duration = SnackbarDuration.Short
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoUnpinMeal(event.mealId)
+                    }
+                }
+                is PlannerEvent.NoRecommendationAvailable -> {
+                    snackbarHostState.showSnackbar(
+                        message = noRecommendationText,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     val hasAnyMeal = state.allTags.isNotEmpty() ||
             state.activeMenu != null ||
             state.recommendedMeal != null
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.planner_title),
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f)
-            )
-            IconButton(onClick = { showFilterSheet = true }) {
-                Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = stringResource(R.string.planner_filter),
-                    tint = if (state.selectedTagIds.isNotEmpty())
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.planner_title),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = { showFilterSheet = true }) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = stringResource(R.string.planner_filter),
+                        tint = if (state.selectedTagIds.isNotEmpty())
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (!hasAnyMeal) {
+                EmptyState(
+                    icon = Icons.Default.Restaurant,
+                    message = stringResource(R.string.planner_empty_title) + "\n" +
+                            stringResource(R.string.planner_empty_message)
+                )
+            } else if (windowWidthSizeClass == WindowWidthSizeClass.Expanded) {
+                // Tablet layout: side-by-side panes
+                PlannerContent(
+                    state = state,
+                    viewModel = viewModel,
+                    onMealClick = onMealClick,
+                    isTablet = true
+                )
+            } else {
+                // Phone layout: scrollable column
+                PlannerContent(
+                    state = state,
+                    viewModel = viewModel,
+                    onMealClick = onMealClick,
+                    isTablet = false
                 )
             }
         }
 
-        if (!hasAnyMeal) {
-            EmptyState(
-                icon = Icons.Default.Restaurant,
-                message = stringResource(R.string.planner_empty_title) + "\n" +
-                        stringResource(R.string.planner_empty_message)
-            )
-        } else if (windowWidthSizeClass == WindowWidthSizeClass.Expanded) {
-            // Tablet layout: side-by-side panes
-            PlannerContent(
-                state = state,
-                viewModel = viewModel,
-                onMealClick = onMealClick,
-                isTablet = true
-            )
-        } else {
-            // Phone layout: scrollable column
-            PlannerContent(
-                state = state,
-                viewModel = viewModel,
-                onMealClick = onMealClick,
-                isTablet = false
-            )
-        }
-    }
-
-    // Filter bottom sheet
-    if (showFilterSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showFilterSheet = false },
-            sheetState = sheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.planner_filter_by_tags),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (state.selectedTagIds.isNotEmpty()) {
-                        TextButton(onClick = viewModel::onClearFilters) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.planner_clear))
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(state.allTags, key = { it.id }) { tag ->
-                        val isSelected = tag.id in state.selectedTagIds
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { viewModel.onTagFilterToggled(tag.id) },
-                            label = { Text(tag.name) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -416,7 +407,10 @@ private fun RecommendedMealCard(
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Button(
                     onClick = onSkip,
                     colors = ButtonDefaults.buttonColors(
@@ -658,18 +652,11 @@ private fun PinnedMealCardContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            if (isCompleted) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = stringResource(R.string.planner_meal_cooked),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
+            // No right-side checkmark icon — completion is indicated by card color + checkbox only
             if (!isAccepted) {
                 IconButton(onClick = onUnpin) {
                     Icon(
-                        imageVector = Icons.Default.PushPin,
+                        imageVector = Icons.Default.Clear,
                         contentDescription = stringResource(R.string.planner_unpin),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                     )

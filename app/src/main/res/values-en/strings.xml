@@ -19,6 +19,7 @@
     <string name="planner_accept_menu">Accept Menu</string>
     <string name="planner_finish_menu">Finish Menu</string>
     <string name="planner_no_recommendation">No displayable recommendation</string>
+    <string name="planner_no_recommendation_toast">No more meals to recommend</string>
     <string name="planner_filter">Filters</string>
     <string name="planner_pinned_meals">Pinned meals</string>
     <string name="planner_meal_cooked">Cooked</string>
@@ -29,6 +30,8 @@
     <string name="planner_recommended">Recommended</string>
     <string name="planner_filter_by_tags">Filter by tags</string>
     <string name="planner_clear">Clear</string>
+    <string name="planner_meal_unpinned">Meal unpinned</string>
+    <string name="planner_undo">Undo</string>
 
     <!-- Meal List Screen -->
     <string name="meal_list_title">Meals</string>
@@ -139,4 +142,3 @@
     <string name="meal_already_in_plan">Already in weekly plan</string>
     <string name="meal_plan_locked">The menu has already been accepted</string>
 </resources>
-

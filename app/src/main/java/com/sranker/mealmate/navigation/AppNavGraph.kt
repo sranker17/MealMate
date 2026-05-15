@@ -115,6 +115,7 @@ fun AppNavGraph(
                 onBackClick = { navController.popBackStack() },
                 onEditClick = { mealId -> navController.navigate(Routes.mealEdit(mealId)) },
                 onDeleteClick = {
+                    // Navigate back only after snackbar undo timeout without undo
                     navController.popBackStack()
                 }
             )

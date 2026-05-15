@@ -189,7 +189,18 @@ class PlannerViewModelTest {
 
     @Test
     fun `unpinMeal removes meal from active menu`() = runTest {
+        // Need a menu with a cross ref showing the meal is pinned for unpinMeal to proceed
+        val menuWithMeals = MenuWithMeals(
+            menu = com.sranker.mealmate.data.MenuEntity(id = 1L, title = "Test Menu"),
+            meals = listOf(soupMeal)
+        )
+        val crossRefs = listOf(MenuMealCrossRef(menuId = 1L, mealId = 1L, isPinned = true))
+        coEvery { menuRepository.getActiveMenuWithMealsFlow() } returns MutableStateFlow(menuWithMeals)
+        coEvery { menuRepository.getActiveMenuCrossRefs() } returns crossRefs
         coEvery { menuRepository.unpinMealFromActiveMenu(1L) } returns Unit
+
+        // Recreate viewModel to pick up new menu flow
+        viewModel = PlannerViewModel(menuRepository, mealRepository, settingsRepository)
 
         viewModel.unpinMeal(1L)
 

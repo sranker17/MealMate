@@ -31,13 +31,13 @@ interface MealDao {
     @Query("SELECT * FROM meals WHERE id = :id")
     suspend fun getMealById(id: Long): MealEntity?
 
-    @Query("SELECT * FROM meals ORDER BY name ASC")
+    @Query("SELECT * FROM meals ORDER BY created_at DESC")
     fun getAllMealsFlow(): Flow<List<MealEntity>>
 
-    @Query("SELECT * FROM meals ORDER BY name ASC")
+    @Query("SELECT * FROM meals ORDER BY created_at DESC")
     suspend fun getAllMeals(): List<MealEntity>
 
-    @Query("SELECT * FROM meals WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
+    @Query("SELECT * FROM meals WHERE name LIKE '%' || :query || '%' ORDER BY created_at DESC")
     fun searchMeals(query: String): Flow<List<MealEntity>>
 
     @Query("SELECT COUNT(*) FROM meals WHERE LOWER(name) = LOWER(:name) AND id != :excludeId")
@@ -48,7 +48,7 @@ interface MealDao {
     // region Meals with Tags
 
     @Transaction
-    @Query("SELECT * FROM meals ORDER BY name ASC")
+    @Query("SELECT * FROM meals ORDER BY created_at DESC")
     fun getAllMealsWithTags(): Flow<List<MealWithTags>>
 
     @Transaction
@@ -60,7 +60,7 @@ interface MealDao {
     suspend fun getMealWithIngredients(mealId: Long): MealWithIngredients?
 
     @Transaction
-    @Query("SELECT * FROM meals ORDER BY name ASC")
+    @Query("SELECT * FROM meals ORDER BY created_at DESC")
     fun getAllMealsWithIngredients(): Flow<List<MealWithIngredients>>
 
     // endregion

@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         MenuEntity::class,
         MenuMealCrossRef::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class MealMateDatabase : RoomDatabase() {
@@ -39,6 +39,14 @@ abstract class MealMateDatabase : RoomDatabase() {
          */
         val MIGRATION_1_2 = Migration(1, 2) { db ->
             db.execSQL("ALTER TABLE menus ADD COLUMN is_accepted INTEGER NOT NULL DEFAULT 0")
+        }
+
+        /**
+         * Migration from version 2 to 3:
+         * Adds the `created_at` column to the `meals` table for sorting by newest first.
+         */
+        val MIGRATION_2_3 = Migration(2, 3) { db ->
+            db.execSQL("ALTER TABLE meals ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0")
         }
     }
 }

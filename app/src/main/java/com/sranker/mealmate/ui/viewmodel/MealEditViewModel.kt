@@ -142,7 +142,9 @@ class MealEditViewModel @Inject constructor(
     fun onNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(
             name = name,
-            nameError = if (name.isNotBlank()) null else _uiState.value.nameError
+            nameError = null,
+            nameErrorResId = null,
+            ingredientsError = null
         )
     }
 
@@ -209,13 +211,6 @@ class MealEditViewModel @Inject constructor(
         val name = state.name.trim()
         if (name.isBlank()) {
             _uiState.value = state.copy(nameError = "A név megadása kötelező")
-            return false
-        }
-        val hasIngredient = state.ingredients.any { it.name.isNotBlank() }
-        if (!hasIngredient) {
-            _uiState.value = _uiState.value.copy(
-                ingredientsError = "Legalább egy hozzávaló megadása kötelező"
-            )
             return false
         }
         return true

@@ -115,6 +115,18 @@ interface MenuDao {
     )
     suspend fun markMealCompleted(menuId: Long, mealId: Long)
 
+    /**
+     * Unmark a meal as completed in the given menu (toggle off).
+     */
+    @Query(
+        """
+        UPDATE menu_meal_cross_ref
+        SET is_completed = 0
+        WHERE menuId = :menuId AND mealId = :mealId
+        """
+    )
+    suspend fun unmarkMealCompleted(menuId: Long, mealId: Long)
+
     // endregion
 
     // region Menu with Meals (Relations)

@@ -197,20 +197,26 @@ class MenuRepositoryTest {
     fun `markMealCompleted delegates to menuDao`() = runTest {
         val menu = MenuEntity(id = 1L, title = "Menu")
         coEvery { menuDao.getActiveMenu() } returns menu
+        coEvery { menuDao.getMenuMealCrossRef(1L, 42L) } returns MenuMealCrossRef(menuId = 1L, mealId = 42L, isCompleted = false)
         coEvery { menuDao.markMealCompleted(1L, 42L) } returns Unit
 
         repository.markMealCompleted(42L)
 
+        coVerify { menuDao.getMenuMealCrossRef(1L, 42L) }
         coVerify { menuDao.markMealCompleted(1L, 42L) }
     }
 
     @Test
-    fun `markMealCompleted is no-op when no active menu`() = runTest {
-        coEvery { menuDao.getActiveMenu() } returns null
+    fun `markMealCompleted unmarks when already completed`() = runTest {
+        val menu = MenuEntity(id = 1L, title = "Menu")
+        coEvery { menuDao.getActiveMenu() } returns menu
+        coEvery { menuDao.getMenuMealCrossRef(1L, 42L) } returns MenuMealCrossRef(menuId = 1L, mealId = 42L, isCompleted = true)
+        coEvery { menuDao.unmarkMealCompleted(1L, 42L) } returns Unit
 
         repository.markMealCompleted(42L)
 
-        coVerify(inverse = true) { menuDao.markMealCompleted(any(), any()) }
+        coVerify { menuDao.getMenuMealCrossRef(1L, 42L) }
+        coVerify { menuDao.unmarkMealCompleted(1L, 42L) }
     }
 
     // endregion

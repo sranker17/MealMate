@@ -28,7 +28,7 @@ object DatabaseModule {
             context,
             MealMateDatabase::class.java,
             "meal_mate_database"
-        ).addMigrations(MealMateDatabase.MIGRATION_1_2)
+        ).addMigrations(MealMateDatabase.MIGRATION_1_2, MealMateDatabase.MIGRATION_2_3)
             .build()
 
     @Provides

@@ -7,11 +7,21 @@ import com.sranker.mealmate.data.MealRepository
 import com.sranker.mealmate.data.MealWithIngredients
 import com.sranker.mealmate.data.MealWithTags
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+/**
+ * One-shot events emitted by [MealDetailViewModel].
+ */
+sealed interface MealDetailEvent {
+    data class MealDeleted(val mealWithTags: MealWithTags) : MealDetailEvent
+}
 
 /**
  * UI state for the meal detail screen.
@@ -44,6 +54,11 @@ class MealDetailViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(MealDetailUiState(isLoading = true))
     val uiState: StateFlow<MealDetailUiState> = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<MealDetailEvent>()
+    val events: SharedFlow<MealDetailEvent> = _events.asSharedFlow()
+
+    private var lastDeletedMeal: MealWithTags? = null
 
     init {
         if (mealId == -1L) {
@@ -78,5 +93,27 @@ class MealDetailViewModel @Inject constructor(
     fun refresh() {
         loadMeal()
     }
-}
 
+    /** Delete the meal and emit a [MealDetailEvent.MealDeleted] for undo support. */
+    fun deleteMeal() {
+        val meal = _uiState.value.mealWithTags ?: return
+        viewModelScope.launch {
+            lastDeletedMeal = meal
+            mealRepository.deleteMeal(meal.meal)
+            _events.emit(MealDetailEvent.MealDeleted(meal))
+        }
+    }
+
+    /** Undo the last deletion by re-inserting the meal. */
+    fun undoDeleteMeal() {
+        val mealWithTags = lastDeletedMeal ?: return
+        viewModelScope.launch {
+            mealRepository.saveMeal(
+                meal = mealWithTags.meal,
+                ingredients = emptyList(),
+                tagIds = mealWithTags.tags.map { it.id }
+            )
+            lastDeletedMeal = null
+        }
+    }
+}

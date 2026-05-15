@@ -16,6 +16,7 @@ import androidx.room.PrimaryKey
  * @property sourceUrl Link to the original recipe source (optional).
  * @property lastCompletedMenuIndex The [MenuEntity.completionIndex] of the last menu
  *   in which this meal was completed. Used for cooldown calculation. -1 means never cooked.
+ * @property createdAt Timestamp (millis) when this meal was created, for sorting by newest first.
  */
 @Entity(tableName = "meals")
 data class MealEntity(
@@ -29,6 +30,7 @@ data class MealEntity(
     @ColumnInfo(name = "source_url")
     val sourceUrl: String = "",
     @ColumnInfo(name = "last_completed_menu_index")
-    val lastCompletedMenuIndex: Int = -1
+    val lastCompletedMenuIndex: Int = -1,
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long = System.currentTimeMillis()
 )
-

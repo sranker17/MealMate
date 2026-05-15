@@ -118,11 +118,17 @@ class MenuRepository @Inject constructor(
     }
 
     /**
-     * Mark a meal as completed in the active menu.
+     * Toggle a meal's completed state in the active menu.
+     * If already completed, unmark it; otherwise mark it as completed.
      */
     suspend fun markMealCompleted(mealId: Long) {
         val menu = menuDao.getActiveMenu() ?: return
-        menuDao.markMealCompleted(menu.id, mealId)
+        val existing = menuDao.getMenuMealCrossRef(menu.id, mealId) ?: return
+        if (existing.isCompleted) {
+            menuDao.unmarkMealCompleted(menu.id, mealId)
+        } else {
+            menuDao.markMealCompleted(menu.id, mealId)
+        }
     }
 
     /** Observe completed menus with their meals. */

@@ -219,6 +219,18 @@ fun MealEditScreen(
                 }
             }
 
+            // Ingredients error message
+            if (state.ingredientsError != null) {
+                item {
+                    Text(
+                        text = state.ingredientsError ?: "",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+
             // 5. Tags section
             item {
                 SectionLabel(text = stringResource(R.string.meal_edit_tags_label))
