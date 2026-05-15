@@ -26,7 +26,6 @@ sealed interface MealListEvent {
     data object RemovedFromPlan : MealListEvent
     data object AlreadyInPlan : MealListEvent
     data object MenuLocked : MealListEvent
-    data class MealDeleted(val mealWithTags: MealWithTags) : MealListEvent
 }
 
 /**
@@ -122,30 +121,6 @@ class MealListViewModel @Inject constructor(
     /** Clear all tag filters. */
     fun onClearFilters() {
         _selectedTagIds.value = emptySet()
-    }
-
-    private var lastDeletedMeal: MealWithTags? = null
-
-    /** Delete a meal by its entity. Saves it for potential undo. */
-    fun deleteMeal(mealWithTags: MealWithTags) {
-        viewModelScope.launch {
-            lastDeletedMeal = mealWithTags
-            mealRepository.deleteMeal(mealWithTags.meal)
-            _events.emit(MealListEvent.MealDeleted(mealWithTags))
-        }
-    }
-
-    /** Undo the last deletion by re-inserting the meal. */
-    fun undoDeleteMeal() {
-        val mealWithTags = lastDeletedMeal ?: return
-        viewModelScope.launch {
-            mealRepository.saveMeal(
-                meal = mealWithTags.meal,
-                ingredients = emptyList(),
-                tagIds = mealWithTags.tags.map { it.id }
-            )
-            lastDeletedMeal = null
-        }
     }
 
     /**

@@ -46,7 +46,12 @@ class MealRepository @Inject constructor(
         ingredients: List<IngredientEntity> = emptyList(),
         tagIds: List<Long> = emptyList()
     ): Long {
-        val mealId = mealDao.insert(meal)
+        val mealId = if (meal.id > 0L) {
+            mealDao.update(meal)
+            meal.id
+        } else {
+            mealDao.insert(meal)
+        }
 
         // Replace ingredients: delete old ones, then insert new ones
         ingredientDao.deleteAllForMeal(mealId)

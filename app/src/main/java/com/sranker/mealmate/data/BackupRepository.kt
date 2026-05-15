@@ -98,6 +98,9 @@ class BackupRepository @Inject constructor(
         val existingNames = mealDao.getAllMeals().map { it.name.lowercase() }.toMutableSet()
         var importedCount = 0
 
+        // Local cache of tag name -> tag ID to avoid re-querying during import
+        val tagCache = mutableMapOf<String, Long>()
+
         backup.meals.forEach { backupMeal ->
             if (backupMeal.name.lowercase() in existingNames) {
                 // Skip duplicate
@@ -105,12 +108,23 @@ class BackupRepository @Inject constructor(
             }
 
             // Resolve tags: create if missing, collect IDs
-            val tagIds = backupMeal.tags.map { tagName ->
-                val existing = tagDao.getTagByName(tagName)
+            val tagIds = backupMeal.tags.mapNotNull { tagName ->
+                val trimmedName = tagName.trim()
+                if (trimmedName.isBlank()) return@mapNotNull null
+
+                // Check local cache first
+                tagCache[trimmedName.lowercase()]?.let { return@mapNotNull it }
+
+                // Check database (case-insensitive)
+                val existing = tagDao.getTagByNameIgnoreCase(trimmedName)
                 if (existing != null) {
+                    tagCache[trimmedName.lowercase()] = existing.id
                     existing.id
                 } else {
-                    tagDao.insert(TagEntity(name = tagName))
+                    // Create new tag
+                    val newId = tagDao.insert(TagEntity(name = trimmedName))
+                    tagCache[trimmedName.lowercase()] = newId
+                    newId
                 }
             }
 

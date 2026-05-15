@@ -77,7 +77,8 @@ fun AppNavGraph(
             PlannerScreen(
                 viewModel = viewModel,
                 windowWidthSizeClass = windowWidthSizeClass,
-                onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) }
+                onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) },
+                onLoadArchivedMenu = { navController.navigate(Routes.MENU_HISTORY) }
             )
         }
 
@@ -94,8 +95,7 @@ fun AppNavGraph(
                 viewModel = viewModel,
                 onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) },
                 onAddMealClick = { navController.navigate(Routes.mealEdit(0L)) },
-                onManageTagsClick = { navController.navigate(Routes.TAG_MANAGE) },
-                onDeleteMeal = { viewModel.deleteMeal(it) }
+                onManageTagsClick = { navController.navigate(Routes.TAG_MANAGE) }
             )
         }
 
@@ -183,7 +183,10 @@ fun AppNavGraph(
             MenuHistoryDetailScreen(
                 viewModel = viewModel,
                 onBackClick = { navController.popBackStack() },
-                onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) }
+                onMealClick = { mealId -> navController.navigate(Routes.mealDetail(mealId)) },
+                onLoadIntoPlanner = {
+                    viewModel.loadIntoPlanner()
+                }
             )
         }
 

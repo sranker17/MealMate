@@ -207,7 +207,7 @@ Replace ALL hardcoded Hungarian strings in composable files with references to s
 ### Known Hardcoded Strings to Fix
 - `PlannerScreen.kt`: "Heti Tervező", "Szűrők", "Kitűzött ételek", "Menü elfogadása", "Menü befejezése", "Kihagyás", "Kitűzés", "Ajánlás", "Véletlenszerű", "Nincs megjeleníthető ajánlás", "Ajánlás keresése…", "Szűrés címkék szerint", "Törlés" (filter clear), "Nincs elérhető étel az adatbázisban" etc.
 - `MealListScreen.kt`: "Ételek", "Címkék kezelése", "Új étel", "Keresés…", "Nincs még étel hozzáadva", snackbar messages
-- `MealDetailScreen.kt`: "Étel Részletei", "Szerkesztés", "Törlés", "Betöltés…", "Hiba történt", "Főzések", "Kihagyások", "Adag", "Címkék", "Forrás", "Recept", "Hozzávalók", "Nincs recept megadva", "Nincsenek hozzávalók", "Étel nem található"
+- `MealDetailScreen.kt`: "Étel részletei", "Szerkesztés", "Törlés", "Betöltés…", "Hiba történt", "Főzések", "Kihagyások", "Adag", "Címkék", "Forrás", "Recept", "Hozzávalók", "Nincs recept megadva", "Nincsenek hozzávalók", "Étel nem található"
 - `MealEditScreen.kt`: "Vissza", "Étel szerkesztése", "Új étel", "Mentés", "Név", "Pl. Csirkepaprikás", "Címkék", "Recept", "Elkészítési útmutató…", "Adag", "Fő", "Forrás", "https://…", "Hozzávalók", "Pl. 200g liszt", "Eltávolítás", "Hozzávaló hozzáadása", "Még nincsenek címkék. Hozz létre címkéket a Címkék oldalon."
 - `SettingsScreen.kt`: "Vissza", "Beállítások", "Ajánlási szünet (menük száma)", "Ennyi menünek kell eltelnie…", "Sötét téma", "Betűméret", "Kicsi", "Közepes", "Nagy", "Akcentus szín", "Főzési előzmények", "Előzmények törlése", "Elfelejted az összes étel főzési előzményét?", "Igen", "Mégse", "Importálás", "Exportálás"
 - `MenuHistoryScreen.kt`: "Vissza", "Előzmények", "Még nincs befejezett menü"

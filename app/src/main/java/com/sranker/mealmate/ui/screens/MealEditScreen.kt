@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -33,17 +35,25 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.viewmodel.MealEditViewModel
+
+private val roundedShape = RoundedCornerShape(12.dp)
 
 /**
  * Meal edit/create screen with elegant, minimalistic styling.
@@ -71,6 +81,9 @@ fun MealEditScreen(
         }
     }
 
+    // Unsaved changes dialog
+    var showUnsavedDialog by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         // Header
         Row(
@@ -79,7 +92,13 @@ fun MealEditScreen(
                 .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBackClick) {
+            IconButton(onClick = {
+                if (viewModel.hasUnsavedChanges()) {
+                    showUnsavedDialog = true
+                } else {
+                    onBackClick()
+                }
+            }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.back),
@@ -140,8 +159,12 @@ fun MealEditScreen(
                         else -> null
                     },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = roundedShape,
                     colors = elegantTextFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -155,8 +178,11 @@ fun MealEditScreen(
                     placeholder = { Text(stringResource(R.string.meal_edit_recipe_hint)) },
                     minLines = 3,
                     maxLines = 8,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = roundedShape,
                     colors = elegantTextFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -171,7 +197,7 @@ fun MealEditScreen(
                     },
                     placeholder = { Text(stringResource(R.string.meal_edit_serving_size)) },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = roundedShape,
                     colors = elegantTextFieldColors(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
@@ -198,8 +224,11 @@ fun MealEditScreen(
                         onValueChange = { viewModel.onIngredientChanged(index, it) },
                         placeholder = { Text(stringResource(R.string.meal_edit_ingredient_hint)) },
                         singleLine = true,
-                        shape = MaterialTheme.shapes.small,
+                        shape = roundedShape,
                         colors = elegantTextFieldColors(),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
                         modifier = Modifier.weight(1f)
                     )
                     if (state.ingredients.size > 1) {
@@ -215,13 +244,16 @@ fun MealEditScreen(
                 }
             }
 
-            // Add ingredient button
+            // Add ingredient button — disabled when any ingredient is empty
             item {
+                val allFilled = state.ingredients.all { it.name.isNotBlank() }
                 OutlinedButton(
                     onClick = viewModel::onAddIngredient,
+                    enabled = allFilled,
                     border = BorderStroke(
                         1.dp,
-                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        if (allFilled) MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        else MaterialTheme.colorScheme.outlineVariant
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -304,7 +336,7 @@ fun MealEditScreen(
                     onValueChange = viewModel::onSourceUrlChanged,
                     placeholder = { Text(stringResource(R.string.meal_edit_source_hint)) },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = roundedShape,
                     colors = elegantTextFieldColors(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                     modifier = Modifier.fillMaxWidth()
@@ -316,6 +348,31 @@ fun MealEditScreen(
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
+    }
+
+    // Unsaved changes dialog
+    if (showUnsavedDialog) {
+        AlertDialog(
+            onDismissRequest = { showUnsavedDialog = false },
+            title = { Text(stringResource(R.string.meal_edit_unsaved_title)) },
+            text = { Text(stringResource(R.string.meal_edit_unsaved_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showUnsavedDialog = false
+                    viewModel.saveMeal()
+                }) {
+                    Text(stringResource(R.string.meal_edit_save_exit))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showUnsavedDialog = false
+                    onBackClick()
+                }) {
+                    Text(stringResource(R.string.meal_edit_discard_exit))
+                }
+            }
+        )
     }
 }
 

@@ -45,7 +45,7 @@
     <string name="meal_removed_from_plan">Eltávolítva a heti tervből</string>
 
     <!-- Meal Detail Screen -->
-    <string name="meal_detail_title">Étel Részletei</string>
+    <string name="meal_detail_title">Étel részletei</string>
     <string name="meal_detail_recipe">Recept</string>
     <string name="meal_detail_ingredients">Hozzávalók</string>
     <string name="meal_detail_tags">Címkék</string>
@@ -85,6 +85,10 @@
     <string name="meal_edit_remove">Eltávolítás</string>
     <string name="meal_edit_no_tags">Még nincsenek címkék. Hozz létre címkéket a Címkék oldalon.</string>
     <string name="meal_edit_duplicate_name">Már létezik ilyen nevű étel</string>
+    <string name="meal_edit_unsaved_title">El nem mentett változtatások</string>
+    <string name="meal_edit_unsaved_message">Vannak el nem mentett változtatásaid. Mit szeretnél tenni?</string>
+    <string name="meal_edit_save_exit">Mentés és kilépés</string>
+    <string name="meal_edit_discard_exit">Elvetés és kilépés</string>
 
     <!-- Tag Management -->
     <string name="tag_manage_title">Címkék kezelése</string>
@@ -93,6 +97,11 @@
     <string name="tag_manage_empty">Még nincsenek címkék</string>
     <string name="tag_manage_name_required">A címke neve nem lehet üres</string>
     <string name="tag_manage_duplicate_name">Már létezik ilyen nevű címke</string>
+    <string name="tag_manage_deleted">Címke törölve</string>
+    <string name="tag_manage_undo">Visszavonás</string>
+
+    <!-- Planner -->
+    <string name="planner_load_archived">Archivált menü betöltése</string>
 
     <!-- Menu History -->
     <string name="history_title">Előzmények</string>
@@ -103,6 +112,8 @@
     <string name="history_menu_details">Menü Részletei</string>
     <string name="history_loading">Betöltés…</string>
     <string name="history_menu_not_found">A menü nem található</string>
+    <string name="history_load_into_planner">Betöltés a tervezőbe</string>
+    <string name="history_loaded_into_planner">Ételek betöltve a tervezőbe</string>
 
     <!-- Settings -->
     <string name="settings_title">Beállítások</string>

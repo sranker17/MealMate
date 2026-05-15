@@ -182,4 +182,18 @@ class MenuRepository @Inject constructor(
             )
         }
     }
+
+    /**
+     * Load all meals from a completed (archived) menu into the current active menu.
+     * Each meal is added as a pinned entry in the active menu.
+     * Duplicates are automatically skipped (meals already in the active menu are not re-added).
+     *
+     * @param menuId The ID of the completed menu to load meals from.
+     */
+    suspend fun loadMenuIntoPlanner(menuId: Long) {
+        val completedMenu = menuDao.getMenuWithMeals(menuId) ?: return
+        completedMenu.meals.forEach { meal ->
+            addMealToActiveMenu(meal.id)
+        }
+    }
 }

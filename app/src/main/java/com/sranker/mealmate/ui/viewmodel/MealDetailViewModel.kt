@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sranker.mealmate.data.MealRepository
 import com.sranker.mealmate.data.MealWithIngredients
 import com.sranker.mealmate.data.MealWithTags
+import com.sranker.mealmate.data.MenuRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +29,7 @@ sealed interface MealDetailEvent {
  *
  * @property mealWithTags The meal with its associated tags, or null if loading/not found.
  * @property mealWithIngredients The meal with its ingredients, or null if loading/not found.
+ * @property isPinned Whether the meal is pinned in the active menu.
  * @property isLoading Whether the meal data is still loading.
  * @property errorMessage An error message if the meal could not be loaded.
  * @property errorMessageResId A string resource ID for the error message, or null.
@@ -35,6 +37,7 @@ sealed interface MealDetailEvent {
 data class MealDetailUiState(
     val mealWithTags: MealWithTags? = null,
     val mealWithIngredients: MealWithIngredients? = null,
+    val isPinned: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val errorMessageResId: Int? = null
@@ -49,7 +52,8 @@ data class MealDetailUiState(
 @HiltViewModel
 class MealDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val mealRepository: MealRepository
+    private val mealRepository: MealRepository,
+    private val menuRepository: MenuRepository
 ) : ViewModel() {
 
     private val mealId: Long = savedStateHandle.get<Long>("mealId") ?: -1L
@@ -79,6 +83,11 @@ class MealDetailViewModel @Inject constructor(
             val withTags = mealRepository.getMealWithTags(mealId)
             val withIngredients = mealRepository.getMealWithIngredients(mealId)
 
+            // Check if the meal is pinned in the active menu
+            val isPinned = menuRepository.getActiveMenuCrossRefs().any {
+                it.mealId == mealId && it.isPinned
+            }
+
             if (withTags == null) {
                 _uiState.value = MealDetailUiState(
                     errorMessage = null,
@@ -89,6 +98,7 @@ class MealDetailViewModel @Inject constructor(
                 _uiState.value = MealDetailUiState(
                     mealWithTags = withTags,
                     mealWithIngredients = withIngredients,
+                    isPinned = isPinned,
                     isLoading = false
                 )
             }

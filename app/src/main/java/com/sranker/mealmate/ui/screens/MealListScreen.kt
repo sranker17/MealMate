@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkAdded
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
@@ -35,7 +34,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,15 +59,13 @@ import com.sranker.mealmate.ui.viewmodel.MealListViewModel
  * @param onMealClick Called when a meal card is tapped.
  * @param onAddMealClick Called when the add meal button is tapped.
  * @param onManageTagsClick Called when the manage tags button is tapped.
- * @param onDeleteMeal Called when a meal delete button is tapped.
  */
 @Composable
 fun MealListScreen(
     viewModel: MealListViewModel,
     onMealClick: (Long) -> Unit,
     onAddMealClick: () -> Unit,
-    onManageTagsClick: () -> Unit,
-    onDeleteMeal: (MealWithTags) -> Unit
+    onManageTagsClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -90,15 +86,6 @@ fun MealListScreen(
                 }
                 MealListEvent.MenuLocked -> {
                     snackbarHostState.showSnackbar(context.getString(R.string.meal_plan_locked))
-                }
-                is MealListEvent.MealDeleted -> {
-                    val result = snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.meal_list_deleted),
-                        actionLabel = context.getString(R.string.meal_list_undo)
-                    )
-                    if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.undoDeleteMeal()
-                    }
                 }
             }
         }
@@ -197,7 +184,6 @@ fun MealListScreen(
                         isInPlan = isInPlan,
                         isMenuLocked = state.isActiveMenuLocked,
                         onClick = { onMealClick(mealWithTags.meal.id) },
-                        onDelete = { onDeleteMeal(mealWithTags) },
                         onAddToPlan = { viewModel.addToActivePlan(mealWithTags.meal.id) }
                     )
                 }
@@ -213,7 +199,7 @@ fun MealListScreen(
 }
 
 /**
- * A single meal card in the list with delete and add-to-plan buttons.
+ * A single meal card in the list with add-to-plan button.
  */
 @Composable
 private fun MealListItem(
@@ -221,7 +207,6 @@ private fun MealListItem(
     isInPlan: Boolean,
     isMenuLocked: Boolean,
     onClick: () -> Unit,
-    onDelete: () -> Unit,
     onAddToPlan: () -> Unit
 ) {
     Card(
@@ -270,13 +255,6 @@ private fun MealListItem(
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete),
-                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }

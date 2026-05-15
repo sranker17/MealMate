@@ -83,6 +83,9 @@ class MealEditViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MealEditUiState())
     val uiState: StateFlow<MealEditUiState> = _uiState.asStateFlow()
 
+    /** Snapshot of the state when the form was first loaded, used for detecting unsaved changes. */
+    private var initialStateSnapshot: MealEditUiState? = null
+
     /** All available tags for tag selection. */
     val allTags: StateFlow<List<TagEntity>> = mealRepository.getAllTags()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -91,10 +94,12 @@ class MealEditViewModel @Inject constructor(
         if (mealId > 0L) {
             loadExistingMeal()
         } else {
-            _uiState.value = MealEditUiState(
+            val initial = MealEditUiState(
                 allTags = allTags.value,
                 ingredients = listOf(IngredientItem(id = 0))
             )
+            _uiState.value = initial
+            initialStateSnapshot = initial
         }
     }
 
@@ -268,5 +273,20 @@ class MealEditViewModel @Inject constructor(
                 savedMealId = mealId
             )
         }
+    }
+
+    /**
+     * Returns true if the current form state differs from the initial loaded state,
+     * indicating unsaved changes.
+     */
+    fun hasUnsavedChanges(): Boolean {
+        val snapshot = initialStateSnapshot ?: return false
+        val current = _uiState.value
+        return current.name != snapshot.name ||
+                current.recipe != snapshot.recipe ||
+                current.ingredients != snapshot.ingredients ||
+                current.selectedTagIds != snapshot.selectedTagIds ||
+                current.servingSize != snapshot.servingSize ||
+                current.sourceUrl != snapshot.sourceUrl
     }
 }

@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -25,10 +28,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,12 +44,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sranker.mealmate.R
 import com.sranker.mealmate.data.MenuWithMeals
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailViewModel
+import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailEvent
+
+private val roundedShape = RoundedCornerShape(12.dp)
 
 /**
  * Read-only detail view of a past (completed) menu.
@@ -50,16 +62,35 @@ import com.sranker.mealmate.ui.viewmodel.MenuHistoryDetailViewModel
  * @param viewModel The [MenuHistoryDetailViewModel].
  * @param onBackClick Called to navigate back.
  * @param onMealClick Called with the meal ID when a meal card is tapped.
+ * @param onLoadIntoPlanner Called to load this menu's meals into the active planner.
  */
 @Composable
 fun MenuHistoryDetailScreen(
     viewModel: MenuHistoryDetailViewModel,
     onBackClick: () -> Unit,
-    onMealClick: (Long) -> Unit = {}
+    onMealClick: (Long) -> Unit = {},
+    onLoadIntoPlanner: (Long) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
     var showRenameDialog by remember { mutableStateOf(false) }
     var renameText by remember { mutableStateOf("") }
+
+    // Capture strings before LaunchedEffect
+    val loadedIntoPlannerText = stringResource(R.string.history_loaded_into_planner)
+
+    // Snackbar when loaded into planner
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is MenuHistoryDetailEvent.LoadedIntoPlanner -> {
+                    snackbarHostState.showSnackbar(
+                        message = loadedIntoPlannerText
+                    )
+                }
+            }
+        }
+    }
 
     // Rename dialog
     if (showRenameDialog) {
@@ -72,6 +103,11 @@ fun MenuHistoryDetailScreen(
                     onValueChange = { renameText = it },
                     label = { Text(stringResource(R.string.history_rename_label)) },
                     singleLine = true,
+                    shape = roundedShape,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Done
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -93,64 +129,90 @@ fun MenuHistoryDetailScreen(
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = MaterialTheme.colorScheme.primary
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = state.menuWithMeals?.menu?.title ?: stringResource(R.string.history_menu_details),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f)
                 )
+                // Rename button
+                IconButton(onClick = {
+                    renameText = state.menuWithMeals?.menu?.title ?: ""
+                    showRenameDialog = true
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.history_rename_title),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
-            Text(
-                text = state.menuWithMeals?.menu?.title ?: stringResource(R.string.history_menu_details),
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f)
-            )
-            // Rename button
-            IconButton(onClick = {
-                renameText = state.menuWithMeals?.menu?.title ?: ""
-                showRenameDialog = true
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.history_rename_title),
-                    tint = MaterialTheme.colorScheme.primary
+
+            when {
+                state.isLoading -> Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 32.dp),
+                    content = {
+                        Text(
+                            text = stringResource(R.string.history_loading),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 )
+                state.menuWithMeals == null -> {
+                    EmptyState(
+                        icon = Icons.Default.Restaurant,
+                        message = stringResource(R.string.history_menu_not_found)
+                    )
+                }
+                else -> {
+                    val menu = state.menuWithMeals!!
+
+                    // Load into Planner button
+                    OutlinedButton(
+                        onClick = { onLoadIntoPlanner(menu.menu.id) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FileDownload,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(stringResource(R.string.history_load_into_planner))
+                    }
+
+                    MenuContent(menu, onMealClick)
+                }
             }
         }
 
-        when {
-            state.isLoading -> Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 32.dp),
-                content = {
-                    Text(
-                        text = stringResource(R.string.history_loading),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            )
-            state.menuWithMeals == null -> {
-                EmptyState(
-                    icon = Icons.Default.Restaurant,
-                    message = stringResource(R.string.history_menu_not_found)
-                )
-            }
-            else -> {
-                val menu = state.menuWithMeals!!
-                MenuContent(menu, onMealClick)
-            }
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        )
     }
 }
 

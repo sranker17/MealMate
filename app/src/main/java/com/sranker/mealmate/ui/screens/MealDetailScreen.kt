@@ -132,12 +132,15 @@ fun MealDetailScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    IconButton(onClick = { viewModel.deleteMeal() }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.meal_detail_delete),
-                            tint = MaterialTheme.colorScheme.error
-                        )
+                    // Only show delete button if meal is not pinned in active menu
+                    if (!state.isPinned) {
+                        IconButton(onClick = { viewModel.deleteMeal() }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.meal_detail_delete),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             }
@@ -182,9 +185,78 @@ fun MealDetailScreen(
                             color = MaterialTheme.colorScheme.onBackground
                         )
 
-                        // Tags (displayed right after name)
+                        // 1. Recipe (moved up)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.meal_detail_recipe),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = meal.meal.recipe.ifBlank { stringResource(R.string.meal_detail_no_recipe) },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (meal.meal.recipe.isBlank())
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                        )
+
+                        // 2. Ingredients (moved up)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.meal_detail_ingredients),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val ingredients = state.mealWithIngredients?.ingredients
+                        if (ingredients.isNullOrEmpty()) {
+                            Text(
+                                text = stringResource(R.string.meal_detail_no_ingredients),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            ingredients.forEach { ingredient ->
+                                Row(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Schedule,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = ingredient.name,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        // 3. Tags / Type (in the middle)
                         if (meal.tags.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                            Text(
+                                text = stringResource(R.string.meal_detail_tags),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 meal.tags.forEach { tag ->
                                     AssistChip(
@@ -201,9 +273,12 @@ fun MealDetailScreen(
                             }
                         }
 
-                        // Source link
+                        // 4. Source link (moved below tags)
                         if (meal.meal.sourceUrl.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
                             Text(
                                 text = stringResource(R.string.meal_detail_source),
                                 style = MaterialTheme.typography.titleMedium,
@@ -235,67 +310,7 @@ fun MealDetailScreen(
                             }
                         }
 
-                        // Recipe
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 16.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
-                        )
-                        Text(
-                            text = stringResource(R.string.meal_detail_recipe),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = meal.meal.recipe.ifBlank { stringResource(R.string.meal_detail_no_recipe) },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (meal.meal.recipe.isBlank())
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            else
-                                MaterialTheme.colorScheme.onSurface
-                        )
-
-                        // Ingredients
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 16.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
-                        )
-                        Text(
-                            text = stringResource(R.string.meal_detail_ingredients),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        val ingredients = state.mealWithIngredients?.ingredients
-                        if (ingredients.isNullOrEmpty()) {
-                            Text(
-                                text = stringResource(R.string.meal_detail_no_ingredients),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else {
-                            ingredients.forEach { ingredient ->
-                                Row(
-                                    modifier = Modifier.padding(vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Schedule,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = ingredient.name,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
-
-                        // Stats row (at the very bottom)
+                        // 5. Stats row (at the very bottom)
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 16.dp),
                             color = MaterialTheme.colorScheme.outlineVariant
@@ -305,6 +320,13 @@ fun MealDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
+                            meal.meal.servingSize?.let { size ->
+                                StatItem(
+                                    icon = Icons.Default.People,
+                                    label = stringResource(R.string.meal_detail_serving_size),
+                                    value = "$size ${stringResource(R.string.meal_detail_servings_unit)}"
+                                )
+                            }
                             StatItem(
                                 icon = Icons.Default.Star,
                                 label = stringResource(R.string.meal_detail_cooked),
@@ -315,13 +337,6 @@ fun MealDetailScreen(
                                 label = stringResource(R.string.meal_detail_skipped),
                                 value = meal.meal.timesSkipped.toString()
                             )
-                            meal.meal.servingSize?.let { size ->
-                                StatItem(
-                                    icon = Icons.Default.People,
-                                    label = stringResource(R.string.meal_detail_serving_size),
-                                    value = "$size ${stringResource(R.string.meal_detail_servings_unit)}"
-                                )
-                            }
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -356,7 +371,7 @@ private fun StatItem(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(

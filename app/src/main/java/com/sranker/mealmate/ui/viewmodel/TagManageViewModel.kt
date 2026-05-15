@@ -5,13 +5,21 @@ import androidx.lifecycle.viewModelScope
 import com.sranker.mealmate.data.MealRepository
 import com.sranker.mealmate.data.TagEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+/** One-shot events emitted by [TagManageViewModel]. */
+sealed interface TagManageEvent {
+    data class TagDeleted(val tag: TagEntity) : TagManageEvent
+}
 
 /**
  * UI state for the tag management screen.
@@ -47,6 +55,11 @@ class TagManageViewModel @Inject constructor(
     /** All tags as a reactive flow (used by other ViewModels if needed). */
     val allTags: StateFlow<List<TagEntity>> = mealRepository.getAllTags()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _events = MutableSharedFlow<TagManageEvent>()
+    val events: SharedFlow<TagManageEvent> = _events.asSharedFlow()
+
+    private var lastDeletedTag: TagEntity? = null
 
     init {
         viewModelScope.launch {
@@ -98,10 +111,21 @@ class TagManageViewModel @Inject constructor(
         }
     }
 
-    /** Delete a tag. */
+    /** Delete a tag with undo support. */
     fun deleteTag(tag: TagEntity) {
         viewModelScope.launch {
+            lastDeletedTag = tag
             mealRepository.deleteTag(tag)
+            _events.emit(TagManageEvent.TagDeleted(tag))
+        }
+    }
+
+    /** Undo the last tag deletion by re-inserting the tag. */
+    fun undoDeleteTag() {
+        val tag = lastDeletedTag ?: return
+        viewModelScope.launch {
+            mealRepository.createTag(tag.name)
+            lastDeletedTag = null
         }
     }
 }

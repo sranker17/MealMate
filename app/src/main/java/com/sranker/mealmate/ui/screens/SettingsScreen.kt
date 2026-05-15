@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -56,13 +57,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sranker.mealmate.R
+import com.sranker.mealmate.ui.AccentColor
 import com.sranker.mealmate.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,17 +107,18 @@ fun SettingsScreen(
     }
 
     if (showResetCooldownDialog) {
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = { },
+        AlertDialog(
+            onDismissRequest = { showResetCooldownDialog = false },
             title = { Text(stringResource(R.string.settings_reset_cooldowns_confirm)) },
             text = { Text(stringResource(R.string.settings_reset_cooldowns_description)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.resetCooldowns()
+                    showResetCooldownDialog = false
                 }) { Text(stringResource(R.string.yes)) }
             },
             dismissButton = {
-                TextButton(onClick = { }) {
+                TextButton(onClick = { showResetCooldownDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -158,7 +160,10 @@ fun SettingsScreen(
             SettingAccentColorCard(state.settings.accentColorName, viewModel)
             SettingLanguageCard(state.settings.language, viewModel)
 
-            OutlinedButton(onClick = { }, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { showResetCooldownDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Icon(
                     Icons.Default.Refresh,
                     contentDescription = null,
@@ -204,7 +209,6 @@ fun SettingsScreen(
                 val message = when {
                     state.importResultResId != null && state.importResultArg != null ->
                         stringResource(state.importResultResId!!, state.importResultArg!!)
-
                     state.importResultResId != null -> stringResource(state.importResultResId!!)
                     else -> state.importResult ?: ""
                 }
@@ -374,13 +378,13 @@ private fun SettingAccentColorCard(currentName: String, viewModel: SettingsViewM
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 listOf(
-                    "teal" to Color(0xFF00897B),
-                    "green" to Color(0xFF2E7D32),
-                    "pink" to Color(0xFFC2185B),
-                    "slate" to Color(0xFF546E7A),
-                    "sky" to Color(0xFF0277BD),
-                    "rose" to Color(0xFFAD1457),
-                    "sand" to Color(0xFFA1887F)
+                    "teal" to AccentColor.Teal.darkPrimary,
+                    "green" to AccentColor.Green.darkPrimary,
+                    "pink" to AccentColor.Pink.darkPrimary,
+                    "slate" to AccentColor.Slate.darkPrimary,
+                    "sky" to AccentColor.Sky.darkPrimary,
+                    "rose" to AccentColor.Rose.darkPrimary,
+                    "sand" to AccentColor.Sand.darkPrimary
                 ).forEach { (name, color) ->
                     val sel = currentName == name
                     Column(
