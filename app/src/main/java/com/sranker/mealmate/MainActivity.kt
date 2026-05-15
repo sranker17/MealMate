@@ -1,5 +1,7 @@
 package com.sranker.mealmate
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +20,7 @@ import com.sranker.mealmate.navigation.MainScaffold
 import com.sranker.mealmate.ui.AccentColor
 import com.sranker.mealmate.ui.MealMateTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -26,6 +29,21 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    override fun attachBaseContext(newBase: Context) {
+        val language = pendingLanguage
+        val context = if (language != null && language != "system") {
+            val locale = Locale.forLanguageTag(language)
+            Locale.setDefault(locale)
+            val config = Configuration(newBase.resources.configuration).apply {
+                setLocale(locale)
+            }
+            newBase.createConfigurationContext(config)
+        } else {
+            newBase
+        }
+        super.attachBaseContext(context)
+    }
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +51,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
             val settings by settingsRepository.settings.collectAsState(initial = null)
+
+            // Apply language setting
+            settings?.language?.let { lang ->
+                applyLanguage(lang)
+            }
 
             val accentColor = when (settings?.accentColorName) {
                 "green" -> AccentColor.Green
@@ -64,5 +87,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun applyLanguage(lang: String) {
+        if (lang != pendingLanguage) {
+            pendingLanguage = lang
+            recreate()
+        }
+    }
+
+    companion object {
+        private var pendingLanguage: String? = null
     }
 }

@@ -5,49 +5,129 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- TOP M -->
+    <!--
+        TOP M — stroke-style bold letter M.
+        Drawn as a thick outline path:
+          Left leg (vertical) → diagonal up-right to peak →
+          diagonal down to center V → diagonal up to right peak →
+          right leg (vertical down) → right leg (vertical up inner) →
+          diagonal down-left to center V inner → diagonal up-right inner →
+          left leg inner → close.
+        Stroke width equivalent ~7dp achieved via outline path thickness.
+    -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="
-            M32,28
-            L32,54
-            L40,54
-            L40,40
-            L54,52
-            L68,40
-            L68,54
-            L76,54
-            L76,28
-            L68,28
+            M30,50
+            L30,22
+            L37,22
             L54,42
-            L40,28
-            Z" />
-
-    <!-- BOTTOM RECEIPT M -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="
-            M32,58
-            L40,58
-            L40,74
-            L54,60
-            L68,74
-            L68,58
-            L76,58
-            L76,86
-            L68,78
-            L60,86
-            L54,80
-            L48,86
-            L40,78
-            L32,86
+            L71,22
+            L78,22
+            L78,50
+            L71,50
+            L71,34
+            L58,50
+            L50,50
+            L37,34
+            L37,50
             Z
 
-            M48,72
-            L54,66
-            L60,72
-            L54,78
+            M37,22
+            L37,29
+            L50,44
+            L54,40
+            L58,44
+            L71,29
+            L71,22
+            L54,34
+            Z" />
+
+    <!--
+        BOTTOM RECEIPT-M:
+        The M-crown at top, then a receipt rectangle body,
+        with two short text lines and a zigzag bottom edge (torn receipt).
+
+        Outer profile (clockwise):
+          Start at top-left of left leg →
+          down the left side →
+          zigzag bottom →
+          up the right side →
+          into the M peaks →
+          back to start.
+        Inner hollow carved out by the M's negative space.
+    -->
+
+    <!-- Left leg of receipt-M -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M30,54
+            L30,85
+            L35,80
+            L40,85
+            L40,54
+            Z" />
+
+    <!-- Right leg of receipt-M -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M68,54
+            L68,85
+            L73,80
+            L78,85
+            L78,54
+            Z" />
+
+    <!-- Center body of receipt (between the M legs, below the V-notch) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M40,68
+            L68,68
+            L68,85
+            L63,80
+            L58,85
+            L54,81
+            L50,85
+            L45,80
+            L40,85
+            Z" />
+
+    <!-- M crown peaks connecting left-leg to center V, and center V to right leg -->
+    <!-- Left diagonal: top of left-leg to center bottom of V -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M30,54
+            L37,54
+            L54,70
+            L71,54
+            L78,54
+            L78,61
+            L54,77
+            L30,61
+            Z" />
+
+    <!-- Text line 1 on receipt -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M44,72
+            L64,72
+            L64,75
+            L44,75
+            Z" />
+
+    <!-- Text line 2 on receipt -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M46,78
+            L62,78
+            L62,81
+            L46,81
             Z" />
 
 </vector>

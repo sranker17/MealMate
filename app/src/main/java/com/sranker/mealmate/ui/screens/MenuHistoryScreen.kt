@@ -1,6 +1,5 @@
 package com.sranker.mealmate.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,8 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,8 +27,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MenuHistoryViewModel
 
@@ -60,12 +60,12 @@ fun MenuHistoryScreen(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza",
+                    contentDescription = stringResource(R.string.back),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
             Text(
-                text = "Előzmények",
+                text = stringResource(R.string.history_title),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
@@ -77,7 +77,7 @@ fun MenuHistoryScreen(
         } else if (state.completedMenus.isEmpty()) {
             EmptyState(
                 icon = Icons.Default.CalendarMonth,
-                message = "Még nincs befejezett menü"
+                message = stringResource(R.string.history_empty)
             )
         } else {
             LazyColumn(
@@ -99,7 +99,7 @@ fun MenuHistoryScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.CheckCircle,
+                                imageVector = Icons.Default.Archive,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
@@ -114,7 +114,10 @@ fun MenuHistoryScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = "${menuWithMeals.meals.size} étel",
+                                    text = stringResource(
+                                        R.string.history_meal_count,
+                                        menuWithMeals.meals.size
+                                    ),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -126,4 +129,3 @@ fun MenuHistoryScreen(
         }
     }
 }
-

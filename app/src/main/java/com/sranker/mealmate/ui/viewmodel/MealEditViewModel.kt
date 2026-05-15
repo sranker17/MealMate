@@ -40,6 +40,8 @@ data class IngredientItem(
  * @property servingSize The serving size, or null if not set.
  * @property sourceUrl The source/link for the recipe.
  * @property nameError Error message for the name field, or null.
+ * @property nameErrorResId Error resource ID for the name field, or null.
+ * @property ingredientsError Error message for the ingredients field, or null.
  * @property isSaving Whether the save operation is in progress.
  * @property savedMealId The ID of the saved meal (non-null after successful save).
  * @property isLoading Whether existing meal data is still loading (edit mode only).
@@ -56,6 +58,8 @@ data class MealEditUiState(
     val servingSize: Int? = null,
     val sourceUrl: String = "",
     val nameError: String? = null,
+    val nameErrorResId: Int? = null,
+    val ingredientsError: String? = null,
     val isSaving: Boolean = false,
     val savedMealId: Long? = null,
     val isLoading: Boolean = false,
@@ -79,6 +83,9 @@ class MealEditViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MealEditUiState())
     val uiState: StateFlow<MealEditUiState> = _uiState.asStateFlow()
 
+    /** Snapshot of the state when the form was first loaded, used for detecting unsaved changes. */
+    private var initialStateSnapshot: MealEditUiState? = null
+
     /** All available tags for tag selection. */
     val allTags: StateFlow<List<TagEntity>> = mealRepository.getAllTags()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -87,10 +94,16 @@ class MealEditViewModel @Inject constructor(
         if (mealId > 0L) {
             loadExistingMeal()
         } else {
-            _uiState.value = MealEditUiState(
-                allTags = allTags.value,
-                ingredients = listOf(IngredientItem(id = 0))
-            )
+            // Load tags asynchronously so we have the real list (not the empty initial value)
+            viewModelScope.launch {
+                val tags = mealRepository.getAllTagsOnce()
+                val initial = MealEditUiState(
+                    allTags = tags,
+                    ingredients = listOf(IngredientItem(id = 0))
+                )
+                _uiState.value = initial
+                initialStateSnapshot = initial
+            }
         }
     }
 
@@ -103,7 +116,8 @@ class MealEditViewModel @Inject constructor(
             if (withTags == null) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Étel nem található"
+                    errorMessage = null,
+                    nameErrorResId = com.sranker.mealmate.R.string.meal_detail_not_found
                 )
                 return@launch
             }
@@ -137,7 +151,9 @@ class MealEditViewModel @Inject constructor(
     fun onNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(
             name = name,
-            nameError = if (name.isNotBlank()) null else _uiState.value.nameError
+            nameError = null,
+            nameErrorResId = null,
+            ingredientsError = null
         )
     }
 
@@ -200,9 +216,13 @@ class MealEditViewModel @Inject constructor(
      * @return true if the form is valid and can be saved.
      */
     private fun validate(): Boolean {
-        val name = _uiState.value.name.trim()
+        val state = _uiState.value
+        val name = state.name.trim()
         if (name.isBlank()) {
-            _uiState.value = _uiState.value.copy(nameError = "A név megadása kötelező")
+            _uiState.value = state.copy(
+                nameError = null,
+                nameErrorResId = com.sranker.mealmate.R.string.meal_edit_name_required
+            )
             return false
         }
         return true
@@ -227,7 +247,8 @@ class MealEditViewModel @Inject constructor(
             if (mealRepository.isMealNameTaken(trimmedName, state.mealId)) {
                 _uiState.value = _uiState.value.copy(
                     isSaving = false,
-                    nameError = "Már létezik ilyen nevű étel"
+                    nameError = null,
+                    nameErrorResId = com.sranker.mealmate.R.string.meal_edit_duplicate_name
                 )
                 return@launch
             }
@@ -256,5 +277,20 @@ class MealEditViewModel @Inject constructor(
                 savedMealId = mealId
             )
         }
+    }
+
+    /**
+     * Returns true if the current form state differs from the initial loaded state,
+     * indicating unsaved changes.
+     */
+    fun hasUnsavedChanges(): Boolean {
+        val snapshot = initialStateSnapshot ?: return false
+        val current = _uiState.value
+        return current.name != snapshot.name ||
+                current.recipe != snapshot.recipe ||
+                current.ingredients != snapshot.ingredients ||
+                current.selectedTagIds != snapshot.selectedTagIds ||
+                current.servingSize != snapshot.servingSize ||
+                current.sourceUrl != snapshot.sourceUrl
     }
 }

@@ -118,11 +118,17 @@ class MenuRepository @Inject constructor(
     }
 
     /**
-     * Mark a meal as completed in the active menu.
+     * Toggle a meal's completed state in the active menu.
+     * If already completed, unmark it; otherwise mark it as completed.
      */
     suspend fun markMealCompleted(mealId: Long) {
         val menu = menuDao.getActiveMenu() ?: return
-        menuDao.markMealCompleted(menu.id, mealId)
+        val existing = menuDao.getMenuMealCrossRef(menu.id, mealId) ?: return
+        if (existing.isCompleted) {
+            menuDao.unmarkMealCompleted(menu.id, mealId)
+        } else {
+            menuDao.markMealCompleted(menu.id, mealId)
+        }
     }
 
     /** Observe completed menus with their meals. */
@@ -174,6 +180,31 @@ class MenuRepository @Inject constructor(
             menuDao.insertMenuMealCrossRef(
                 MenuMealCrossRef(menuId = menu.id, mealId = mealId, isPinned = true)
             )
+        }
+    }
+
+    /**
+     * Returns true if loading meals from an archived menu into the planner is allowed.
+     * Loading is blocked when the active menu already has any meals (whether accepted or not).
+     * The current menu must be finished (completed) before archived meals can be loaded.
+     */
+    suspend fun canLoadIntoPlanner(): Boolean {
+        val menu = menuDao.getActiveMenu() ?: return true // No active menu = safe to load
+        val crossRefs = menuDao.getMenuMealCrossRefsForMenu(menu.id)
+        return crossRefs.isEmpty() // Only allow if no meals in the active menu
+    }
+
+    /**
+     * Load all meals from a completed (archived) menu into the current active menu.
+     * Each meal is added as a pinned entry in the active menu.
+     * Duplicates are automatically skipped (meals already in the active menu are not re-added).
+     *
+     * @param menuId The ID of the completed menu to load meals from.
+     */
+    suspend fun loadMenuIntoPlanner(menuId: Long) {
+        val completedMenu = menuDao.getMenuWithMeals(menuId) ?: return
+        completedMenu.meals.forEach { meal ->
+            addMealToActiveMenu(meal.id)
         }
     }
 }

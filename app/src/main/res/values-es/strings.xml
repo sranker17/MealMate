@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MealMate</string>
+
+    <!-- Navigation -->
+    <string name="nav_planner">Menú</string>
+    <string name="nav_meals">Platos</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Planner Screen -->
+    <string name="planner_title">Menú</string>
+    <string name="planner_empty_title">Aún no hay platos guardados</string>
+    <string name="planner_empty_message">¡Añade platos en la sección Platos para empezar a planificar!</string>
+    <string name="planner_recommend">Recomendar</string>
+    <string name="planner_pin">Fijar</string>
+    <string name="planner_unpin">Desfijar</string>
+    <string name="planner_skip">Saltar</string>
+    <string name="planner_accept_menu">Aceptar menú</string>
+    <string name="planner_finish_menu">Finalizar menú</string>
+    <string name="planner_no_recommendation_toast">No hay más platos para recomendar</string>
+    <string name="planner_filter">Filtros</string>
+    <string name="planner_pinned_meals">Platos fijados</string>
+    <string name="planner_recommending">Buscando recomendación\u2026</string>
+    <string name="planner_recommended">Recomendado</string>
+    <string name="planner_filter_by_tags">Filtrar por etiquetas</string>
+    <string name="planner_clear">Limpiar</string>
+    <string name="planner_meal_unpinned">Plato desfijado</string>
+    <string name="planner_undo">Deshacer</string>
+
+    <!-- Meal List Screen -->
+    <string name="meal_list_title">Platos</string>
+    <string name="meal_list_search_hint">Buscar\u2026</string>
+    <string name="meal_list_empty">Aún no se han añadido platos</string>
+    <string name="meal_list_manage_tags">Gestionar etiquetas</string>
+    <string name="meal_list_new_meal">Nuevo plato</string>
+    <string name="meal_list_deleted">Plato eliminado</string>
+    <string name="meal_list_undo">Deshacer</string>
+    <string name="meal_removed_from_plan">Eliminado del menú</string>
+
+    <!-- Meal Detail Screen -->
+    <string name="meal_detail_title">Detalles del plato</string>
+    <string name="meal_detail_recipe">Receta</string>
+    <string name="meal_detail_ingredients">Ingredientes</string>
+    <string name="meal_detail_tags">Etiquetas</string>
+    <string name="meal_detail_serving_size">Ración</string>
+    <string name="meal_detail_source">Fuente</string>
+    <string name="meal_detail_edit">Editar</string>
+    <string name="meal_detail_delete">Eliminar</string>
+    <string name="meal_detail_loading">Cargando\u2026</string>
+    <string name="meal_detail_not_found">Plato no encontrado</string>
+    <string name="meal_detail_no_ingredients">Sin ingredientes</string>
+    <string name="meal_detail_servings_unit">raciones</string>
+    <string name="meal_detail_cooked">Veces cocinado</string>
+    <string name="meal_detail_skipped">Veces saltado</string>
+
+    <!-- Meal Edit Screen -->
+    <string name="meal_edit_title_new">Nuevo plato</string>
+    <string name="meal_edit_title_edit">Editar plato</string>
+    <string name="meal_edit_name_label">Nombre</string>
+    <string name="meal_edit_name_hint">p.ej. Pollo al paprika</string>
+    <string name="meal_edit_recipe_label">Receta</string>
+    <string name="meal_edit_recipe_hint">Instrucciones de preparación\u2026</string>
+    <string name="meal_edit_ingredients_label">Ingredientes</string>
+    <string name="meal_edit_ingredient_hint">Nuevo ingrediente\u2026</string>
+    <string name="meal_edit_serving_size">Raciones</string>
+    <string name="meal_edit_source_label">Enlace de origen</string>
+    <string name="meal_edit_source_hint">https://\u2026</string>
+    <string name="meal_edit_tags_label">Etiquetas</string>
+    <string name="meal_edit_save">Guardar</string>
+    <string name="meal_edit_name_required">El nombre es obligatorio</string>
+    <string name="meal_edit_add_ingredient">Añadir ingrediente</string>
+    <string name="meal_edit_remove">Eliminar</string>
+    <string name="meal_edit_no_tags">Aún no hay etiquetas. Crea etiquetas en la página de Etiquetas.</string>
+    <string name="meal_edit_duplicate_name">Ya existe un plato con este nombre</string>
+    <string name="meal_edit_unsaved_title">Cambios no guardados</string>
+    <string name="meal_edit_unsaved_message">Tienes cambios no guardados. ¿Qué te gustaría hacer?</string>
+    <string name="meal_edit_save_exit">Guardar y salir</string>
+    <string name="meal_edit_discard_exit">Descartar y salir</string>
+
+    <!-- Tag Management -->
+    <string name="tag_manage_title">Gestionar etiquetas</string>
+    <string name="tag_manage_add_hint">Nueva etiqueta\u2026</string>
+    <string name="tag_manage_add">Añadir</string>
+    <string name="tag_manage_empty">Aún no hay etiquetas</string>
+    <string name="tag_manage_name_required">El nombre de la etiqueta no puede estar vacío</string>
+    <string name="tag_manage_duplicate_name">Ya existe una etiqueta con este nombre</string>
+    <string name="tag_manage_deleted">Etiqueta eliminada</string>
+    <string name="tag_manage_undo">Deshacer</string>
+
+    <!-- Menu History -->
+    <string name="history_title">Historial</string>
+    <string name="history_empty">Aún no hay menús completados</string>
+    <string name="history_rename_title">Renombrar menú</string>
+    <string name="history_rename_label">Título del menú</string>
+    <string name="history_meal_count">%d platos</string>
+    <string name="history_menu_details">Detalles del menú</string>
+    <string name="history_loading">Cargando…</string>
+    <string name="history_menu_not_found">Menú no encontrado</string>
+    <string name="history_load_blocked">No se puede cargar: actualmente se está montando un menú.</string>
+    <string name="history_load_into_planner">Cargar en el planificador</string>
+    <string name="history_loaded_into_planner">Platos cargados en el planificador</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_cooldown">Pausa de recomendación (menús)</string>
+    <string name="settings_cooldown_description">Cuántos menús deben pasar antes de que un plato pueda ser recomendado de nuevo</string>
+    <string name="settings_reset_cooldowns">Restablecer pausas</string>
+    <string name="settings_reset_cooldowns_confirm">¿Estás seguro de que quieres eliminar todas las pausas?</string>
+    <string name="settings_reset_cooldowns_description">Restablecer el historial de cocción de todos los platos</string>
+    <string name="settings_dark_theme">Tema oscuro</string>
+    <string name="settings_font_size">Tamaño de fuente</string>
+    <string name="settings_font_size_small">Pequeño</string>
+    <string name="settings_font_size_medium">Mediano</string>
+    <string name="settings_font_size_large">Grande</string>
+    <string name="settings_import">Importar</string>
+    <string name="settings_export">Exportar</string>
+    <string name="settings_import_success">Importado correctamente: %d platos</string>
+    <string name="settings_export_success">Exportación exitosa</string>
+    <string name="settings_accent_color">Color de acento</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_system">Sistema</string>
+    <string name="settings_language_hungarian">Magyar</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_spanish">Español</string>
+
+    <!-- Color names -->
+    <string name="color_teal">Verde azulado</string>
+    <string name="color_green">Verde</string>
+    <string name="color_pink">Rosa</string>
+    <string name="color_slate">Pizarra</string>
+    <string name="color_sky">Cielo</string>
+    <string name="color_rose">Rosa</string>
+    <string name="color_sand">Arena</string>
+
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="yes">Sí</string>
+    <string name="delete">Eliminar</string>
+    <string name="save">Guardar</string>
+    <string name="back">Volver</string>
+
+    <!-- Add to Plan -->
+    <string name="meal_add_to_plan">Añadir al menú</string>
+    <string name="meal_added_to_plan">Añadido al menú</string>
+    <string name="meal_already_in_plan">Ya está en el menú</string>
+    <string name="meal_plan_locked">El menú ya ha sido aceptado</string>
+    <string name="planner_load_archived">Cargar menú archivado</string>
+</resources>
+

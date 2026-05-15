@@ -78,7 +78,8 @@ class TagManageViewModelTest {
         viewModel.addTag()
 
         coVerify(inverse = true) { mealRepository.createTag(any()) }
-        assertThat(viewModel.uiState.value.errorMessage).isEqualTo("A címke neve nem lehet üres")
+        assertThat(viewModel.uiState.value.errorMessage).isNull()
+        assertThat(viewModel.uiState.value.errorMessageResId).isEqualTo(com.sranker.mealmate.R.string.tag_manage_name_required)
     }
 
     @Test
@@ -88,7 +89,8 @@ class TagManageViewModelTest {
         viewModel.addTag()
 
         coVerify(inverse = true) { mealRepository.createTag(any()) }
-        assertThat(viewModel.uiState.value.errorMessage).isEqualTo("Már létezik ilyen nevű címke")
+        assertThat(viewModel.uiState.value.errorMessage).isNull()
+        assertThat(viewModel.uiState.value.errorMessageResId).isEqualTo(com.sranker.mealmate.R.string.tag_manage_duplicate_name)
     }
 
     @Test
@@ -98,7 +100,8 @@ class TagManageViewModelTest {
         viewModel.addTag()
 
         coVerify(inverse = true) { mealRepository.createTag(any()) }
-        assertThat(viewModel.uiState.value.errorMessage).isEqualTo("Már létezik ilyen nevű címke")
+        assertThat(viewModel.uiState.value.errorMessage).isNull()
+        assertThat(viewModel.uiState.value.errorMessageResId).isEqualTo(com.sranker.mealmate.R.string.tag_manage_duplicate_name)
     }
 
     @Test
@@ -106,10 +109,11 @@ class TagManageViewModelTest {
         val viewModel = TagManageViewModel(mealRepository)
         viewModel.onNewTagNameChanged("   ")
         viewModel.addTag()
-        assertThat(viewModel.uiState.value.errorMessage).isNotNull()
+        assertThat(viewModel.uiState.value.errorMessageResId).isNotNull()
 
         viewModel.onNewTagNameChanged("Salad")
         assertThat(viewModel.uiState.value.errorMessage).isNull()
+        assertThat(viewModel.uiState.value.errorMessageResId).isNull()
     }
 
     // endregion

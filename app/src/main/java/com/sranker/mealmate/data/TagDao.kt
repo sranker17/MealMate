@@ -33,6 +33,9 @@ interface TagDao {
     @Query("SELECT * FROM tags WHERE name = :name LIMIT 1")
     suspend fun getTagByName(name: String): TagEntity?
 
+    @Query("SELECT * FROM tags WHERE LOWER(name) = LOWER(:name) LIMIT 1")
+    suspend fun getTagByNameIgnoreCase(name: String): TagEntity?
+
     @Query("SELECT * FROM tags WHERE id = :id")
     suspend fun getTagById(id: Long): TagEntity?
 
@@ -63,4 +66,3 @@ interface TagDao {
 
     // endregion
 }
-

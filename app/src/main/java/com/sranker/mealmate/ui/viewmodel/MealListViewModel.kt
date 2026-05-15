@@ -23,8 +23,10 @@ import javax.inject.Inject
  */
 sealed interface MealListEvent {
     data object AddedToPlan : MealListEvent
+    data object RemovedFromPlan : MealListEvent
     data object AlreadyInPlan : MealListEvent
     data object MenuLocked : MealListEvent
+    data class MealDeleted(val mealWithTags: MealWithTags) : MealListEvent
 }
 
 /**
@@ -70,6 +72,15 @@ class MealListViewModel @Inject constructor(
     /** One-shot UI events (snackbar). */
     private val _events = MutableSharedFlow<MealListEvent>()
     val events = _events.asSharedFlow()
+
+    /** Pending delete-undo event, persisted across back-stack navigation. */
+    private val _pendingUndoDeleteMeal = MutableStateFlow<MealWithTags?>(null)
+    val pendingUndoDeleteMeal: StateFlow<MealWithTags?> = _pendingUndoDeleteMeal.asStateFlow()
+
+    /** Consume the pending delete event (called after showing the snackbar). */
+    fun consumePendingDelete() {
+        _pendingUndoDeleteMeal.value = null
+    }
 
     /** All tags available for filter selection. */
     val allTags: StateFlow<List<TagEntity>> = mealRepository.getAllTags()
@@ -122,15 +133,8 @@ class MealListViewModel @Inject constructor(
         _selectedTagIds.value = emptySet()
     }
 
-    /** Delete a meal by its entity. */
-    fun deleteMeal(mealWithTags: MealWithTags) {
-        viewModelScope.launch {
-            mealRepository.deleteMeal(mealWithTags.meal)
-        }
-    }
-
     /**
-     * Add a meal to the active plan (non-accepted menu).
+     * Add a meal to the active plan (non-accepted menu), or remove if already in plan.
      * Emits a one-shot [MealListEvent] for the UI to show a snackbar.
      */
     fun addToActivePlan(mealId: Long) {
@@ -139,10 +143,34 @@ class MealListViewModel @Inject constructor(
             if (state.isActiveMenuLocked) {
                 _events.emit(MealListEvent.MenuLocked)
             } else if (mealId in state.mealIdsInActivePlan) {
-                _events.emit(MealListEvent.AlreadyInPlan)
+                menuRepository.unpinMealFromActiveMenu(mealId)
+                _events.emit(MealListEvent.RemovedFromPlan)
             } else {
                 menuRepository.addMealToActiveMenu(mealId)
                 _events.emit(MealListEvent.AddedToPlan)
+            }
+        }
+    }
+
+    /** Undo the last deletion by re-inserting the meal with its tags. */
+    fun undoDeleteMeal(mealWithTags: MealWithTags) {
+        viewModelScope.launch {
+            // Use a fresh copy with id=0 so Room inserts instead of silently failing on update
+            val restoredMeal = mealWithTags.meal.copy(id = 0L)
+            mealRepository.saveMeal(
+                meal = restoredMeal,
+                ingredients = emptyList(),
+                tagIds = mealWithTags.tags.map { it.id }
+            )
+        }
+    }
+
+    init {
+        // Collect repository-wide delete-undo events (from MealDetailScreen)
+        // Use a StateFlow so the event persists across back-stack navigation.
+        viewModelScope.launch {
+            mealRepository.deleteUndoEvents.collect { mealWithTags ->
+                _pendingUndoDeleteMeal.value = mealWithTags
             }
         }
     }

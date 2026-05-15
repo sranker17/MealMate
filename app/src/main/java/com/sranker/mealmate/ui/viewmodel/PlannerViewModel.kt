@@ -10,6 +10,9 @@ import com.sranker.mealmate.data.MenuWithMeals
 import com.sranker.mealmate.data.SettingsRepository
 import com.sranker.mealmate.data.TagEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +20,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+/**
+ * One-shot UI events emitted by [PlannerViewModel].
+ */
+sealed interface PlannerEvent {
+    data class MealUnpinned(val mealId: Long) : PlannerEvent
+    data object NoRecommendationAvailable : PlannerEvent
+}
 
 /**
  * UI state for the planner screen — the main interactive screen of the app.
@@ -30,6 +41,7 @@ import javax.inject.Inject
  * @property allTags All available tags for filter selection.
  * @property cooldown The current cooldown parameter from settings.
  * @property errorMessage An error or informational message.
+ * @property errorMessageResId An error or informational message resource ID.
  */
 data class PlannerUiState(
     val recommendedMeal: MealWithTags? = null,
@@ -40,8 +52,12 @@ data class PlannerUiState(
     val selectedTagIds: Set<Long> = emptySet(),
     val allTags: List<TagEntity> = emptyList(),
     val cooldown: Int = 3,
-    val errorMessage: String? = null
-)
+    val errorMessage: String? = null,
+    val errorMessageResId: Int? = null
+) {
+    /** True when there is a recommended meal that hasn't been pinned or skipped yet. */
+    val hasOutstandingRecommendation: Boolean get() = recommendedMeal != null
+}
 
 /**
  * ViewModel for the planner (main) screen.
@@ -54,6 +70,7 @@ data class PlannerUiState(
  * - Respects active [selectedTagIds] filters (if any).
  * - When a meal is skipped, increments its [timesSkipped] stat.
  * - When a meal is pinned, adds it to the active menu.
+ * - Excludes skipped meals until the menu cycle is complete.
  */
 @HiltViewModel
 class PlannerViewModel @Inject constructor(
@@ -71,6 +88,13 @@ class PlannerViewModel @Inject constructor(
 
     /** The last recommended meal ID, used to record skipped stats when replacing. */
     private var lastRecommendedMealId: Long? = null
+
+    /** Set of meal IDs skipped in the current session (cleared on finish). */
+    private var skippedMealIds: Set<Long> = emptySet()
+
+    /** One-shot UI events (snackbar). */
+    private val _events = MutableSharedFlow<PlannerEvent>()
+    val events: SharedFlow<PlannerEvent> = _events.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -132,7 +156,7 @@ class PlannerViewModel @Inject constructor(
         val state = _uiState.value
 
         viewModelScope.launch {
-            _uiState.value = state.copy(isRecommending = true, errorMessage = null)
+            _uiState.value = state.copy(isRecommending = true, errorMessage = null, errorMessageResId = null)
 
             // Record skip for the previously recommended meal if it wasn't pinned
             val previousId = lastRecommendedMealId
@@ -140,6 +164,8 @@ class PlannerViewModel @Inject constructor(
                 val isPinned = state.activeMenuCrossRefs.any { it.mealId == previousId && it.isPinned }
                 if (!isPinned) {
                     mealRepository.recordMealSkipped(previousId)
+                    // Track skipped meal so it won't be recommended again until menu cycle completes
+                    skippedMealIds = skippedMealIds + previousId
                 }
             }
 
@@ -147,10 +173,19 @@ class PlannerViewModel @Inject constructor(
             val currentIndex = menuRepository.getCurrentCompletionIndex()
             val tagIds = _uiState.value.selectedTagIds.toList()
 
+            // Collect IDs to exclude: pinned + last recommended (if pending) + skipped
+            val excludeIds = buildSet {
+                state.activeMenu?.meals?.forEach { add(it.id) }
+                if (previousId != null && state.activeMenuCrossRefs.none { it.mealId == previousId && it.isPinned }) {
+                    add(previousId)
+                }
+                addAll(skippedMealIds)
+            }.toList()
+
             val meal = if (tagIds.isEmpty()) {
-                mealRepository.getRandomMealNotInCooldown(cooldown, currentIndex)
+                mealRepository.getRandomMealNotInCooldown(cooldown, currentIndex, excludeIds)
             } else {
-                mealRepository.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds)
+                mealRepository.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds, excludeIds)
             }
 
             if (meal != null) {
@@ -161,11 +196,13 @@ class PlannerViewModel @Inject constructor(
                     isRecommending = false
                 )
             } else {
+                _events.emit(PlannerEvent.NoRecommendationAvailable)
                 lastRecommendedMealId = null
                 _uiState.value = _uiState.value.copy(
                     recommendedMeal = null,
                     isRecommending = false,
-                    errorMessage = "Nincs elérhető étel a megadott szűrőkkel"
+                    errorMessage = null,
+                    errorMessageResId = null
                 )
             }
         }
@@ -200,10 +237,25 @@ class PlannerViewModel @Inject constructor(
 
     /**
      * Unpin a meal from the active menu.
+     * Emits a [PlannerEvent.MealUnpinned] event for undo support.
      */
     fun unpinMeal(mealId: Long) {
+        val state = _uiState.value
+        val isPinned = state.activeMenuCrossRefs.any { it.mealId == mealId && it.isPinned }
+        if (!isPinned) return
+
         viewModelScope.launch {
             menuRepository.unpinMealFromActiveMenu(mealId)
+            _events.emit(PlannerEvent.MealUnpinned(mealId))
+        }
+    }
+
+    /**
+     * Undo the last unpin by re-pinning the meal to the active menu.
+     */
+    fun undoUnpinMeal(mealId: Long) {
+        viewModelScope.launch {
+            menuRepository.pinMealToActiveMenu(mealId)
         }
     }
 
@@ -213,12 +265,16 @@ class PlannerViewModel @Inject constructor(
 
     /**
      * Accept (lock) the active menu so that meal completion tracking begins.
+     * Clears any active tag filters.
      */
     fun acceptMenu() {
         viewModelScope.launch {
             val success = menuRepository.acceptMenu()
             if (success) {
-                _uiState.value = _uiState.value.copy(isAccepted = true)
+                _uiState.value = _uiState.value.copy(
+                    isAccepted = true,
+                    selectedTagIds = emptySet()
+                )
             }
         }
     }
@@ -235,13 +291,15 @@ class PlannerViewModel @Inject constructor(
     /**
      * Finish (archive) the active menu and create a fresh active menu for the next planning cycle.
      *
-     * After finishing, the recommended meal is cleared and the menu resets.
+     * After finishing, the recommended meal is cleared, the menu resets, and skipped meals
+     * are cleared so they can be recommended again in future cycles.
      */
     fun finishMenu() {
         viewModelScope.launch {
             val index = menuRepository.finishMenu()
             if (index != -1) {
                 lastRecommendedMealId = null
+                skippedMealIds = emptySet()
                 _uiState.value = _uiState.value.copy(
                     recommendedMeal = null,
                     isAccepted = false

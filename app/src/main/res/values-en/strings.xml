@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MealMate</string>
+
+    <!-- Navigation -->
+    <string name="nav_planner">Menu</string>
+    <string name="nav_meals">Meals</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Planner Screen -->
+    <string name="planner_title">Menu</string>
+    <string name="planner_empty_title">No saved meals yet</string>
+    <string name="planner_empty_message">Add meals in the Meals section to start planning!</string>
+    <string name="planner_recommend">Recommend</string>
+    <string name="planner_pin">Pin</string>
+    <string name="planner_unpin">Unpin</string>
+    <string name="planner_skip">Skip</string>
+    <string name="planner_accept_menu">Accept Menu</string>
+    <string name="planner_finish_menu">Finish Menu</string>
+    <string name="planner_no_recommendation_toast">No more meals to recommend</string>
+    <string name="planner_filter">Filters</string>
+    <string name="planner_pinned_meals">Pinned meals</string>
+    <string name="planner_recommending">Searching for recommendation\u2026</string>
+    <string name="planner_recommended">Recommended</string>
+    <string name="planner_filter_by_tags">Filter by tags</string>
+    <string name="planner_clear">Clear</string>
+    <string name="planner_meal_unpinned">Meal unpinned</string>
+    <string name="planner_undo">Undo</string>
+
+    <!-- Meal List Screen -->
+    <string name="meal_list_title">Meals</string>
+    <string name="meal_list_search_hint">Search\u2026</string>
+    <string name="meal_list_empty">No meals added yet</string>
+    <string name="meal_list_manage_tags">Manage Tags</string>
+    <string name="meal_list_new_meal">New meal</string>
+    <string name="meal_list_deleted">Meal deleted</string>
+    <string name="meal_list_undo">Undo</string>
+    <string name="meal_removed_from_plan">Removed from menu</string>
+
+    <!-- Meal Detail Screen -->
+    <string name="meal_detail_title">Meal Details</string>
+    <string name="meal_detail_recipe">Recipe</string>
+    <string name="meal_detail_ingredients">Ingredients</string>
+    <string name="meal_detail_tags">Tags</string>
+    <string name="meal_detail_serving_size">Serving</string>
+    <string name="meal_detail_source">Source</string>
+    <string name="meal_detail_edit">Edit</string>
+    <string name="meal_detail_delete">Delete</string>
+    <string name="meal_detail_loading">Loading\u2026</string>
+    <string name="meal_detail_not_found">Meal not found</string>
+    <string name="meal_detail_no_ingredients">No ingredients</string>
+    <string name="meal_detail_servings_unit">servings</string>
+    <string name="meal_detail_cooked">Times cooked</string>
+    <string name="meal_detail_skipped">Times skipped</string>
+
+    <!-- Meal Edit Screen -->
+    <string name="meal_edit_title_new">New meal</string>
+    <string name="meal_edit_title_edit">Edit meal</string>
+    <string name="meal_edit_name_label">Name</string>
+    <string name="meal_edit_name_hint">e.g. Chicken Paprikash</string>
+    <string name="meal_edit_recipe_label">Recipe</string>
+    <string name="meal_edit_recipe_hint">Preparation instructions\u2026</string>
+    <string name="meal_edit_ingredients_label">Ingredients</string>
+    <string name="meal_edit_ingredient_hint">New ingredient\u2026</string>
+    <string name="meal_edit_serving_size">Servings</string>
+    <string name="meal_edit_source_label">Source link</string>
+    <string name="meal_edit_source_hint">https://\u2026</string>
+    <string name="meal_edit_tags_label">Tags</string>
+    <string name="meal_edit_save">Save</string>
+    <string name="meal_edit_name_required">Name is required</string>
+    <string name="meal_edit_add_ingredient">Add ingredient</string>
+    <string name="meal_edit_remove">Remove</string>
+    <string name="meal_edit_no_tags">No tags yet. Create tags in the Tags page.</string>
+    <string name="meal_edit_duplicate_name">A meal with this name already exists</string>
+    <string name="meal_edit_unsaved_title">Unsaved changes</string>
+    <string name="meal_edit_unsaved_message">You have unsaved changes. What would you like to do?</string>
+    <string name="meal_edit_save_exit">Save and exit</string>
+    <string name="meal_edit_discard_exit">Discard and exit</string>
+
+    <!-- Tag Management -->
+    <string name="tag_manage_title">Manage Tags</string>
+    <string name="tag_manage_add_hint">New tag\u2026</string>
+    <string name="tag_manage_add">Add</string>
+    <string name="tag_manage_empty">No tags yet</string>
+    <string name="tag_manage_name_required">Tag name cannot be empty</string>
+    <string name="tag_manage_duplicate_name">A tag with this name already exists</string>
+    <string name="tag_manage_deleted">Tag deleted</string>
+    <string name="tag_manage_undo">Undo</string>
+
+    <!-- Menu History -->
+    <string name="history_title">History</string>
+    <string name="history_empty">No completed menus yet</string>
+    <string name="history_rename_title">Rename Menu</string>
+    <string name="history_rename_label">Menu title</string>
+    <string name="history_meal_count">%d meals</string>
+    <string name="history_menu_details">Menu Details</string>
+    <string name="history_loading">Loading…</string>
+    <string name="history_menu_not_found">Menu not found</string>
+    <string name="history_load_blocked">Cannot load: a menu is currently being assembled.</string>
+    <string name="history_load_into_planner">Load into planner</string>
+    <string name="history_loaded_into_planner">Meals loaded into planner</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_cooldown">Recommendation cooldown (menus)</string>
+    <string name="settings_cooldown_description">How many menus must pass before a meal can be recommended again</string>
+    <string name="settings_reset_cooldowns">Reset cooldowns</string>
+    <string name="settings_reset_cooldowns_confirm">Are you sure you want to clear all cooldowns?</string>
+    <string name="settings_reset_cooldowns_description">Reset the cooking history for all meals</string>
+    <string name="settings_dark_theme">Dark theme</string>
+    <string name="settings_font_size">Font size</string>
+    <string name="settings_font_size_small">Small</string>
+    <string name="settings_font_size_medium">Medium</string>
+    <string name="settings_font_size_large">Large</string>
+    <string name="settings_import">Import</string>
+    <string name="settings_export">Export</string>
+    <string name="settings_import_success">Successfully imported: %d meals</string>
+    <string name="settings_export_success">Export successful</string>
+    <string name="settings_accent_color">Accent color</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System</string>
+    <string name="settings_language_hungarian">Magyar</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_spanish">Español</string>
+
+    <!-- Color names -->
+    <string name="color_teal">Teal</string>
+    <string name="color_green">Green</string>
+    <string name="color_pink">Pink</string>
+    <string name="color_slate">Slate</string>
+    <string name="color_sky">Sky</string>
+    <string name="color_rose">Rose</string>
+    <string name="color_sand">Sand</string>
+
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="back">Back</string>
+
+    <!-- Add to Plan -->
+    <string name="meal_add_to_plan">Add to plan</string>
+    <string name="meal_added_to_plan">Added to menu</string>
+    <string name="meal_already_in_plan">Already in menu</string>
+    <string name="meal_plan_locked">The menu has already been accepted</string>
+    <string name="planner_load_archived">Load archived menu</string>
+</resources>

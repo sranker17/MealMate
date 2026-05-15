@@ -14,12 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkAdded
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
@@ -33,8 +34,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,8 +46,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sranker.mealmate.R
 import com.sranker.mealmate.data.MealWithTags
 import com.sranker.mealmate.ui.components.EmptyState
 import com.sranker.mealmate.ui.viewmodel.MealListEvent
@@ -58,141 +65,187 @@ import com.sranker.mealmate.ui.viewmodel.MealListViewModel
  * @param onMealClick Called when a meal card is tapped.
  * @param onAddMealClick Called when the add meal button is tapped.
  * @param onManageTagsClick Called when the manage tags button is tapped.
- * @param onDeleteMeal Called when a meal delete button is tapped.
  */
 @Composable
 fun MealListScreen(
     viewModel: MealListViewModel,
     onMealClick: (Long) -> Unit,
     onAddMealClick: () -> Unit,
-    onManageTagsClick: () -> Unit,
-    onDeleteMeal: (MealWithTags) -> Unit
+    onManageTagsClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     // Collect one-shot events for snackbar
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
-            val message = when (event) {
-                MealListEvent.AddedToPlan -> "Hozzáadva a heti tervhez"
-                MealListEvent.AlreadyInPlan -> "Már hozzá van adva a heti tervhez"
-                MealListEvent.MenuLocked -> "A menü már elfogadásra került"
+            when (event) {
+                MealListEvent.AddedToPlan -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_added_to_plan))
+                }
+
+                MealListEvent.RemovedFromPlan -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_removed_from_plan))
+                }
+
+                MealListEvent.AlreadyInPlan -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_already_in_plan))
+                }
+
+                MealListEvent.MenuLocked -> {
+                    snackbarHostState.showSnackbar(context.getString(R.string.meal_plan_locked))
+                }
+
+                is MealListEvent.MealDeleted -> {
+                    // This handles deletions initiated from this screen (if any)
+                }
             }
-            snackbarHostState.showSnackbar(message)
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 8.dp, top = 24.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Ételek",
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f)
+    // Observe pending delete-undo event persisted across back-stack navigation
+    val pendingDelete = viewModel.pendingUndoDeleteMeal.collectAsState().value
+    LaunchedEffect(pendingDelete) {
+        pendingDelete?.let { mealWithTags ->
+            val result = snackbarHostState.showSnackbar(
+                message = context.getString(R.string.meal_list_deleted),
+                actionLabel = context.getString(R.string.meal_list_undo),
+                duration = SnackbarDuration.Short
             )
-            IconButton(onClick = onManageTagsClick) {
-                Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = "Címkék kezelése",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = onAddMealClick) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Új étel",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            viewModel.consumePendingDelete()
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.undoDeleteMeal(mealWithTags)
             }
         }
+    }
 
-        // Search bar
-        OutlinedTextField(
-            value = state.searchQuery,
-            onValueChange = viewModel::onSearchQueryChanged,
-            placeholder = { Text("Keresés…", style = MaterialTheme.typography.bodyLarge) },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-            ),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-        )
-
-        // Filter chips
-        if (state.allTags.isNotEmpty()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(start = 16.dp, end = 8.dp, top = 24.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                state.allTags.forEach { tag ->
-                    FilterChip(
-                        selected = tag.id in state.selectedTagIds,
-                        onClick = { viewModel.onTagFilterToggled(tag.id) },
-                        label = { Text(tag.name) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                Text(
+                    text = stringResource(R.string.meal_list_title),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onManageTagsClick) {
+                    Icon(
+                        imageVector = Icons.Default.LocalOffer,
+                        contentDescription = stringResource(R.string.meal_list_manage_tags),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(onClick = onAddMealClick) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.meal_list_new_meal),
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-        }
 
-        // Meal list or empty state
-        if (state.meals.isEmpty()) {
-            EmptyState(
-                icon = Icons.Default.Restaurant,
-                message = "Nincs még étel hozzáadva"
+            // Search bar
+            OutlinedTextField(
+                value = state.searchQuery,
+                onValueChange = viewModel::onSearchQueryChanged,
+                placeholder = {
+                    Text(
+                        stringResource(R.string.meal_list_search_hint),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done,
+                    capitalization = KeyboardCapitalization.Sentences
+                )
             )
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(state.meals, key = { it.meal.id }) { mealWithTags ->
-                    val isInPlan = mealWithTags.meal.id in state.mealIdsInActivePlan
-                    MealListItem(
-                        mealWithTags = mealWithTags,
-                        isInPlan = isInPlan,
-                        isMenuLocked = state.isActiveMenuLocked,
-                        onClick = { onMealClick(mealWithTags.meal.id) },
-                        onDelete = { onDeleteMeal(mealWithTags) },
-                        onAddToPlan = { viewModel.addToActivePlan(mealWithTags.meal.id) }
-                    )
+
+            // Filter chips
+            if (state.allTags.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    state.allTags.forEach { tag ->
+                        FilterChip(
+                            selected = tag.id in state.selectedTagIds,
+                            onClick = { viewModel.onTagFilterToggled(tag.id) },
+                            label = { Text(tag.name) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
                 }
             }
+
+            // Meal list or empty state
+            if (state.meals.isEmpty()) {
+                EmptyState(
+                    icon = Icons.Default.Restaurant,
+                    message = stringResource(R.string.meal_list_empty)
+                )
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(state.meals, key = { it.meal.id }) { mealWithTags ->
+                        val isInPlan = mealWithTags.meal.id in state.mealIdsInActivePlan
+                        MealListItem(
+                            mealWithTags = mealWithTags,
+                            isInPlan = isInPlan,
+                            isMenuLocked = state.isActiveMenuLocked,
+                            onClick = { onMealClick(mealWithTags.meal.id) },
+                            onAddToPlan = { viewModel.addToActivePlan(mealWithTags.meal.id) }
+                        )
+                    }
+                }
+            }
+
+            // Snackbar host for add-to-plan feedback
         }
 
-        // Snackbar host for add-to-plan feedback
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
         )
     }
 }
 
 /**
- * A single meal card in the list with delete and add-to-plan buttons.
+ * A single meal card in the list with add-to-plan button.
  */
 @Composable
 private fun MealListItem(
@@ -200,7 +253,6 @@ private fun MealListItem(
     isInPlan: Boolean,
     isMenuLocked: Boolean,
     onClick: () -> Unit,
-    onDelete: () -> Unit,
     onAddToPlan: () -> Unit
 ) {
     Card(
@@ -230,7 +282,12 @@ private fun MealListItem(
                         mealWithTags.tags.forEach { tag ->
                             AssistChip(
                                 onClick = {},
-                                label = { Text(tag.name, style = MaterialTheme.typography.labelSmall) },
+                                label = {
+                                    Text(
+                                        tag.name,
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                },
                                 colors = AssistChipDefaults.assistChipColors(
                                     containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                                     labelColor = MaterialTheme.colorScheme.primary
@@ -244,18 +301,11 @@ private fun MealListItem(
             IconButton(onClick = onAddToPlan) {
                 Icon(
                     imageVector = if (isInPlan) Icons.Default.BookmarkAdded else Icons.Default.BookmarkAdd,
-                    contentDescription = "Tervhez adás",
+                    contentDescription = stringResource(R.string.meal_add_to_plan),
                     tint = if (isInPlan)
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Törlés",
-                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }

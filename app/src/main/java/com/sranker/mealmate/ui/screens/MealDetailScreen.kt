@@ -1,7 +1,6 @@
 package com.sranker.mealmate.ui.screens
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,14 +33,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import com.sranker.mealmate.R
 import com.sranker.mealmate.ui.components.EmptyState
+import com.sranker.mealmate.ui.viewmodel.MealDetailEvent
 import com.sranker.mealmate.ui.viewmodel.MealDetailViewModel
 
 /**
@@ -51,7 +55,7 @@ import com.sranker.mealmate.ui.viewmodel.MealDetailViewModel
  * @param viewModel The [MealDetailViewModel] providing UI state.
  * @param onBackClick Called to navigate back.
  * @param onEditClick Called to navigate to the edit screen.
- * @param onDeleteClick Called to delete the meal.
+ * @param onDeleteClick Called after the meal is deleted (to navigate back).
  */
 @Composable
 fun MealDetailScreen(
@@ -62,223 +66,252 @@ fun MealDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+    // Refresh data when screen is composed (handles returning from edit)
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
+    // Consume one-shot events — navigate back on delete
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                MealDetailEvent.MealDeleted -> onDeleteClick()
             }
-            Text(
-                text = "Étel Részletei",
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f)
-            )
-            val mealId = state.mealWithTags?.meal?.id
-            if (mealId != null) {
-                IconButton(onClick = { onEditClick(mealId) }) {
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Szerkesztés",
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                IconButton(onClick = onDeleteClick) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Törlés",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-        }
-
-        // Content
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Betöltés…",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            state.errorMessage != null -> {
-                EmptyState(
-                    icon = Icons.Default.Restaurant,
-                    message = state.errorMessage ?: "Hiba történt"
+                Text(
+                    text = stringResource(R.string.meal_detail_title),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f)
                 )
-            }
-            else -> {
-                val meal = state.mealWithTags ?: return
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp)
-                ) {
-                    // Meal name
-                    Text(
-                        text = meal.meal.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-
-                    // Stats row
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        StatItem(
-                            icon = Icons.Default.Star,
-                            label = "Főzések",
-                            value = meal.meal.timesCooked.toString()
+                val mealId = state.mealWithTags?.meal?.id
+                if (mealId != null) {
+                    IconButton(onClick = { onEditClick(mealId) }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.meal_detail_edit),
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                        StatItem(
-                            icon = Icons.Default.SkipNext,
-                            label = "Kihagyások",
-                            value = meal.meal.timesSkipped.toString()
-                        )
-                        meal.meal.servingSize?.let { size ->
-                            StatItem(
-                                icon = Icons.Default.People,
-                                label = "Adag",
-                                value = "$size fő"
+                    }
+                    // Only show delete button if meal is not pinned in active menu
+                    if (!state.isPinned) {
+                        IconButton(onClick = { viewModel.deleteMeal() }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.meal_detail_delete),
+                                tint = MaterialTheme.colorScheme.error
                             )
                         }
                     }
+                }
+            }
 
-                    // Tags
-                    if (meal.tags.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
+            // Content
+            when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            text = "Címkék",
+                            text = stringResource(R.string.meal_detail_loading),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                state.errorMessage != null || state.errorMessageResId != null -> {
+                    EmptyState(
+                        icon = Icons.Default.Restaurant,
+                        message = when {
+                            state.errorMessageResId != null -> stringResource(state.errorMessageResId!!)
+                            else -> state.errorMessage!!
+                        }
+                    )
+                }
+
+                else -> {
+                    val meal = state.mealWithTags ?: return
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        // Meal name
+                        Text(
+                            text = meal.meal.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        // 1. Recipe (moved up)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.meal_detail_recipe),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            meal.tags.forEach { tag ->
-                                AssistChip(
-                                    onClick = {},
-                                    label = { Text(tag.name) },
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                        labelColor = MaterialTheme.colorScheme.primary
-                                    )
-                                )
-                            }
-                        }
-                    }
 
-                    // Source link
-                    if (meal.meal.sourceUrl.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        // 2. Ingredients (moved up)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
                         Text(
-                            text = "Forrás",
+                            text = stringResource(R.string.meal_detail_ingredients),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        val context = LocalContext.current
-                        TextButton(
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(meal.meal.sourceUrl))
-                                context.startActivity(intent)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Link,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val ingredients = state.mealWithIngredients?.ingredients
+                        if (ingredients.isNullOrEmpty()) {
                             Text(
-                                text = meal.meal.sourceUrl,
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    textDecoration = TextDecoration.Underline
-                                ),
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1
+                                text = stringResource(R.string.meal_detail_no_ingredients),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                        } else {
+                            ingredients.forEach { ingredient ->
+                                Row(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Schedule,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = ingredient.name,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
                         }
-                    }
 
-                    // Recipe
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
-                    Text(
-                        text = "Recept",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = meal.meal.recipe.ifBlank { "Nincs recept megadva" },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (meal.meal.recipe.isBlank())
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        else
-                            MaterialTheme.colorScheme.onSurface
-                    )
+                        // 3. Tags / Type (in the middle)
+                        if (meal.tags.isNotEmpty()) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                            Text(
+                                text = stringResource(R.string.meal_detail_tags),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                meal.tags.forEach { tag ->
+                                    AssistChip(
+                                        onClick = {},
+                                        label = { Text(tag.name) },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            containerColor = MaterialTheme.colorScheme.primary.copy(
+                                                alpha = 0.1f
+                                            ),
+                                            labelColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    )
+                                }
+                            }
+                        }
 
-                    // Ingredients
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
-                    Text(
-                        text = "Hozzávalók",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val ingredients = state.mealWithIngredients?.ingredients
-                    if (ingredients.isNullOrEmpty()) {
-                        Text(
-                            text = "Nincsenek hozzávalók",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    } else {
-                        ingredients.forEach { ingredient ->
-                            Row(
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                        // 4. Source link (moved below tags)
+                        if (meal.meal.sourceUrl.isNotBlank()) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                            Text(
+                                text = stringResource(R.string.meal_detail_source),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val context = LocalContext.current
+                            TextButton(
+                                onClick = {
+                                    val intent =
+                                        Intent(Intent.ACTION_VIEW, meal.meal.sourceUrl.toUri())
+                                    context.startActivity(intent)
+                                }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Schedule,
+                                    imageVector = Icons.Default.Link,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(12.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = ingredient.name,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    text = meal.meal.sourceUrl,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        textDecoration = TextDecoration.Underline
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1
                                 )
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                        // 5. Stats row (at the very bottom)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            meal.meal.servingSize?.let { size ->
+                                StatItem(
+                                    icon = Icons.Default.People,
+                                    label = stringResource(R.string.meal_detail_serving_size),
+                                    value = "$size ${stringResource(R.string.meal_detail_servings_unit)}"
+                                )
+                            }
+                            StatItem(
+                                icon = Icons.Default.Star,
+                                label = stringResource(R.string.meal_detail_cooked),
+                                value = meal.meal.timesCooked.toString()
+                            )
+                            StatItem(
+                                icon = Icons.Default.SkipNext,
+                                label = stringResource(R.string.meal_detail_skipped),
+                                value = meal.meal.timesSkipped.toString()
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
                 }
             }
         }
@@ -304,7 +337,7 @@ private fun StatItem(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
@@ -314,4 +347,3 @@ private fun StatItem(
         )
     }
 }
-

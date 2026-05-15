@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MealMate</string>
+
+    <!-- Navigation -->
+    <string name="nav_planner">Menü</string>
+    <string name="nav_meals">Gerichte</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- Planner Screen -->
+    <string name="planner_title">Menü</string>
+    <string name="planner_empty_title">Noch keine gespeicherten Gerichte</string>
+    <string name="planner_empty_message">Füge Gerichte im Bereich \"Gerichte\" hinzu, um mit der Planung zu beginnen!</string>
+    <string name="planner_recommend">Empfehlen</string>
+    <string name="planner_pin">Anheften</string>
+    <string name="planner_unpin">Loslösen</string>
+    <string name="planner_skip">Überspringen</string>
+    <string name="planner_accept_menu">Menü annehmen</string>
+    <string name="planner_finish_menu">Menü abschließen</string>
+    <string name="planner_no_recommendation_toast">Keine weiteren Gerichte zu empfehlen</string>
+    <string name="planner_filter">Filter</string>
+    <string name="planner_pinned_meals">Angeheftete Gerichte</string>
+    <string name="planner_recommending">Suche nach Empfehlung\u2026</string>
+    <string name="planner_recommended">Empfohlen</string>
+    <string name="planner_filter_by_tags">Nach Schlagwörtern filtern</string>
+    <string name="planner_clear">Löschen</string>
+    <string name="planner_meal_unpinned">Gericht losgelöst</string>
+    <string name="planner_undo">Rückgängig</string>
+
+    <!-- Meal List Screen -->
+    <string name="meal_list_title">Gerichte</string>
+    <string name="meal_list_search_hint">Suchen\u2026</string>
+    <string name="meal_list_empty">Noch keine Gerichte hinzugefügt</string>
+    <string name="meal_list_manage_tags">Schlagwörter verwalten</string>
+    <string name="meal_list_new_meal">Neues Gericht</string>
+    <string name="meal_list_deleted">Gericht gelöscht</string>
+    <string name="meal_list_undo">Rückgängig</string>
+    <string name="meal_removed_from_plan">Vom Menü entfernt</string>
+
+    <!-- Meal Detail Screen -->
+    <string name="meal_detail_title">Gerichtdetails</string>
+    <string name="meal_detail_recipe">Rezept</string>
+    <string name="meal_detail_ingredients">Zutaten</string>
+    <string name="meal_detail_tags">Schlagwörter</string>
+    <string name="meal_detail_serving_size">Portion</string>
+    <string name="meal_detail_source">Quelle</string>
+    <string name="meal_detail_edit">Bearbeiten</string>
+    <string name="meal_detail_delete">Löschen</string>
+    <string name="meal_detail_loading">Laden\u2026</string>
+    <string name="meal_detail_not_found">Gericht nicht gefunden</string>
+    <string name="meal_detail_no_ingredients">Keine Zutaten</string>
+    <string name="meal_detail_servings_unit">Portionen</string>
+    <string name="meal_detail_cooked">Anzahl zubereitet</string>
+    <string name="meal_detail_skipped">Anzahl übersprungen</string>
+
+    <!-- Meal Edit Screen -->
+    <string name="meal_edit_title_new">Neues Gericht</string>
+    <string name="meal_edit_title_edit">Gericht bearbeiten</string>
+    <string name="meal_edit_name_label">Name</string>
+    <string name="meal_edit_name_hint">z.B. Hähnchenpaprikasch</string>
+    <string name="meal_edit_recipe_label">Rezept</string>
+    <string name="meal_edit_recipe_hint">Zubereitungshinweise\u2026</string>
+    <string name="meal_edit_ingredients_label">Zutaten</string>
+    <string name="meal_edit_ingredient_hint">Neue Zutat\u2026</string>
+    <string name="meal_edit_serving_size">Portionen</string>
+    <string name="meal_edit_source_label">Quelllink</string>
+    <string name="meal_edit_source_hint">https://\u2026</string>
+    <string name="meal_edit_tags_label">Schlagwörter</string>
+    <string name="meal_edit_save">Speichern</string>
+    <string name="meal_edit_name_required">Name ist erforderlich</string>
+    <string name="meal_edit_add_ingredient">Zutat hinzufügen</string>
+    <string name="meal_edit_remove">Entfernen</string>
+    <string name="meal_edit_no_tags">Noch keine Schlagwörter. Erstelle Schlagwörter auf der Schlagwörter-Seite.</string>
+    <string name="meal_edit_duplicate_name">Ein Gericht mit diesem Namen existiert bereits</string>
+    <string name="meal_edit_unsaved_title">Ungespeicherte Änderungen</string>
+    <string name="meal_edit_unsaved_message">Du hast ungespeicherte Änderungen. Was möchtest du tun?</string>
+    <string name="meal_edit_save_exit">Speichern und beenden</string>
+    <string name="meal_edit_discard_exit">Verwerfen und beenden</string>
+
+    <!-- Tag Management -->
+    <string name="tag_manage_title">Schlagwörter verwalten</string>
+    <string name="tag_manage_add_hint">Neues Schlagwort\u2026</string>
+    <string name="tag_manage_add">Hinzufügen</string>
+    <string name="tag_manage_empty">Noch keine Schlagwörter</string>
+    <string name="tag_manage_name_required">Der Schlagwortname darf nicht leer sein</string>
+    <string name="tag_manage_duplicate_name">Ein Schlagwort mit diesem Namen existiert bereits</string>
+    <string name="tag_manage_deleted">Schlagwort gelöscht</string>
+    <string name="tag_manage_undo">Rückgängig</string>
+
+    <!-- Menu History -->
+    <string name="history_title">Verlauf</string>
+    <string name="history_empty">Noch keine abgeschlossenen Menüs</string>
+    <string name="history_rename_title">Menü umbenennen</string>
+    <string name="history_rename_label">Menütitel</string>
+    <string name="history_meal_count">%d Gerichte</string>
+    <string name="history_menu_details">Menüdetails</string>
+    <string name="history_loading">Laden…</string>
+    <string name="history_menu_not_found">Menü nicht gefunden</string>
+    <string name="history_load_blocked">Kann nicht geladen werden: Es wird gerade ein Menü zusammengestellt.</string>
+    <string name="history_load_into_planner">In den Planer laden</string>
+    <string name="history_loaded_into_planner">Gerichte in den Planer geladen</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_cooldown">Empfehlungspause (Menüs)</string>
+    <string name="settings_cooldown_description">Wie viele Menüs vergehen müssen, bevor ein Gericht erneut empfohlen werden kann</string>
+    <string name="settings_reset_cooldowns">Empfehlungspausen zurücksetzen</string>
+    <string name="settings_reset_cooldowns_confirm">Möchtest du wirklich alle Empfehlungspausen löschen?</string>
+    <string name="settings_reset_cooldowns_description">Setzt den Kochverlauf aller Gerichte zurück</string>
+    <string name="settings_dark_theme">Dunkles Thema</string>
+    <string name="settings_font_size">Schriftgröße</string>
+    <string name="settings_font_size_small">Klein</string>
+    <string name="settings_font_size_medium">Mittel</string>
+    <string name="settings_font_size_large">Groß</string>
+    <string name="settings_import">Importieren</string>
+    <string name="settings_export">Exportieren</string>
+    <string name="settings_import_success">Erfolgreich importiert: %d Gerichte</string>
+    <string name="settings_export_success">Export erfolgreich</string>
+    <string name="settings_accent_color">Akzentfarbe</string>
+    <string name="settings_language">Sprache</string>
+    <string name="settings_language_system">System</string>
+    <string name="settings_language_hungarian">Magyar</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_spanish">Español</string>
+
+    <!-- Color names -->
+    <string name="color_teal">Blaugrün</string>
+    <string name="color_green">Grün</string>
+    <string name="color_pink">Rosa</string>
+    <string name="color_slate">Schiefergrau</string>
+    <string name="color_sky">Himmelblau</string>
+    <string name="color_rose">Rosenrot</string>
+    <string name="color_sand">Sand</string>
+
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="yes">Ja</string>
+    <string name="delete">Löschen</string>
+    <string name="save">Speichern</string>
+    <string name="back">Zurück</string>
+
+    <!-- Add to Plan -->
+    <string name="meal_add_to_plan">Zum Menü hinzufügen</string>
+    <string name="meal_added_to_plan">Zum Menü hinzugefügt</string>
+    <string name="meal_already_in_plan">Bereits im Menü</string>
+    <string name="meal_plan_locked">Das Menü wurde bereits angenommen</string>
+    <string name="planner_load_archived">Archiviertes Menü laden</string>
+</resources>
+

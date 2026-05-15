@@ -1,6 +1,9 @@
 package com.sranker.mealmate.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,7 +49,12 @@ class MealRepository @Inject constructor(
         ingredients: List<IngredientEntity> = emptyList(),
         tagIds: List<Long> = emptyList()
     ): Long {
-        val mealId = mealDao.insert(meal)
+        val mealId = if (meal.id > 0L) {
+            mealDao.update(meal)
+            meal.id
+        } else {
+            mealDao.insert(meal)
+        }
 
         // Replace ingredients: delete old ones, then insert new ones
         ingredientDao.deleteAllForMeal(mealId)
@@ -57,7 +65,12 @@ class MealRepository @Inject constructor(
         // Replace tag associations: delete old ones, then insert new ones
         tagDao.deleteAllTagsForMeal(mealId)
         if (tagIds.isNotEmpty()) {
-            tagDao.insertMealTagCrossRefs(tagIds.map { MealTagCrossRef(mealId = mealId, tagId = it) })
+            tagDao.insertMealTagCrossRefs(tagIds.map {
+                MealTagCrossRef(
+                    mealId = mealId,
+                    tagId = it
+                )
+            })
         }
 
         return mealId
@@ -72,8 +85,9 @@ class MealRepository @Inject constructor(
      */
     suspend fun getRandomMealNotInCooldown(
         cooldown: Int,
-        currentIndex: Int
-    ): MealEntity? = mealDao.getRandomMealNotInCooldown(cooldown, currentIndex)
+        currentIndex: Int,
+        excludeIds: List<Long> = emptyList()
+    ): MealEntity? = mealDao.getRandomMealNotInCooldown(cooldown, currentIndex, excludeIds)
 
     /**
      * Returns one random meal matching the given [tagIds] and not in cooldown.
@@ -82,8 +96,10 @@ class MealRepository @Inject constructor(
     suspend fun getRandomMealNotInCooldownByTags(
         cooldown: Int,
         currentIndex: Int,
-        tagIds: List<Long>
-    ): MealEntity? = mealDao.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds)
+        tagIds: List<Long>,
+        excludeIds: List<Long> = emptyList()
+    ): MealEntity? =
+        mealDao.getRandomMealNotInCooldownByTags(cooldown, currentIndex, tagIds, excludeIds)
 
     /** Increment the [timesCooked] counter and update [lastCompletedMenuIndex]. */
     suspend fun recordMealCooked(mealId: Long, menuCompletionIndex: Int) {
@@ -132,4 +148,13 @@ class MealRepository @Inject constructor(
      */
     suspend fun isMealNameTaken(name: String, excludeId: Long = 0): Boolean =
         mealDao.countMealsByName(name, excludeId) > 0
+
+    /** SharedFlow for delete-undo events, emitted when a meal is deleted from a detail screen. */
+    private val _deleteUndoEvents = MutableSharedFlow<MealWithTags>()
+    val deleteUndoEvents: SharedFlow<MealWithTags> = _deleteUndoEvents.asSharedFlow()
+
+    /** Emit a deleted meal with its tags for undo handling on other screens. */
+    suspend fun emitDeleteUndoEvent(mealWithTags: MealWithTags) {
+        _deleteUndoEvents.emit(mealWithTags)
+    }
 }

@@ -3,14 +3,13 @@
     <string name="app_name">MealMate</string>
 
     <!-- Navigation -->
-    <string name="nav_planner">Tervező</string>
+    <string name="nav_planner">Menü</string>
     <string name="nav_meals">Ételek</string>
-    <string name="nav_history">Előzmények</string>
     <string name="nav_settings">Beállítások</string>
 
     <!-- Planner Screen -->
-    <string name="planner_title">Heti Tervező</string>
-    <string name="planner_empty_title">Még nincs étel az adatbázisban</string>
+    <string name="planner_title">Menü</string>
+    <string name="planner_empty_title">Még nincs elmentett étel</string>
     <string name="planner_empty_message">Adj hozzá ételeket az Ételek menüpontban, hogy elkezdhesd a tervezést!</string>
     <string name="planner_recommend">Ajánlás</string>
     <string name="planner_pin">Kitűzés</string>
@@ -18,29 +17,41 @@
     <string name="planner_skip">Kihagyás</string>
     <string name="planner_accept_menu">Menü elfogadása</string>
     <string name="planner_finish_menu">Menü befejezése</string>
-    <string name="planner_no_recommendation">Nincs megjeleníthető ajánlás</string>
+    <string name="planner_no_recommendation_toast">Nincs több ajánlható étel</string>
     <string name="planner_filter">Szűrők</string>
     <string name="planner_pinned_meals">Kitűzött ételek</string>
-    <string name="planner_meal_cooked">Elkészítve</string>
+    <string name="planner_recommending">Étel keresése…</string>
+    <string name="planner_recommended">Ajánlott</string>
+    <string name="planner_filter_by_tags">Szűrés címkék szerint</string>
+    <string name="planner_clear">Törlés</string>
+    <string name="planner_meal_unpinned">Étel kitűzés visszavonva</string>
+    <string name="planner_undo">Visszavonás</string>
 
     <!-- Meal List Screen -->
     <string name="meal_list_title">Ételek</string>
     <string name="meal_list_search_hint">Keresés…</string>
     <string name="meal_list_empty">Nincs még étel hozzáadva</string>
-    <string name="meal_list_add">Hozzáadás</string>
+    <string name="meal_list_manage_tags">Címkék kezelése</string>
+    <string name="meal_list_new_meal">Új étel</string>
+    <string name="meal_list_deleted">Étel törölve</string>
+    <string name="meal_list_undo">Visszavonás</string>
+    <string name="meal_removed_from_plan">Eltávolítva a menüről</string>
 
     <!-- Meal Detail Screen -->
-    <string name="meal_detail_title">Étel Részletei</string>
+    <string name="meal_detail_title">Étel részletei</string>
     <string name="meal_detail_recipe">Recept</string>
     <string name="meal_detail_ingredients">Hozzávalók</string>
     <string name="meal_detail_tags">Címkék</string>
     <string name="meal_detail_serving_size">Adag</string>
     <string name="meal_detail_source">Forrás</string>
-    <string name="meal_detail_times_cooked">Főzések száma</string>
-    <string name="meal_detail_times_skipped">Kihagyások száma</string>
     <string name="meal_detail_edit">Szerkesztés</string>
     <string name="meal_detail_delete">Törlés</string>
-    <string name="meal_detail_delete_confirm">Biztosan törlöd ezt az ételt?</string>
+    <string name="meal_detail_loading">Betöltés…</string>
+    <string name="meal_detail_not_found">Étel nem található</string>
+    <string name="meal_detail_no_ingredients">Nincsenek hozzávalók</string>
+    <string name="meal_detail_servings_unit">adag</string>
+    <string name="meal_detail_cooked">Elkészítések száma</string>
+    <string name="meal_detail_skipped">Kihagyások száma</string>
 
     <!-- Meal Edit Screen -->
     <string name="meal_edit_title_new">Új étel</string>
@@ -57,24 +68,48 @@
     <string name="meal_edit_tags_label">Címkék</string>
     <string name="meal_edit_save">Mentés</string>
     <string name="meal_edit_name_required">A név megadása kötelező</string>
+    <string name="meal_edit_add_ingredient">Hozzávaló hozzáadása</string>
+    <string name="meal_edit_remove">Eltávolítás</string>
+    <string name="meal_edit_no_tags">Még nincsenek címkék. Hozz létre címkéket a Címkék oldalon.</string>
+    <string name="meal_edit_duplicate_name">Már létezik ilyen nevű étel</string>
+    <string name="meal_edit_unsaved_title">El nem mentett változtatások</string>
+    <string name="meal_edit_unsaved_message">Vannak el nem mentett változtatásaid. Mit szeretnél tenni?</string>
+    <string name="meal_edit_save_exit">Mentés és kilépés</string>
+    <string name="meal_edit_discard_exit">Elvetés és kilépés</string>
 
     <!-- Tag Management -->
     <string name="tag_manage_title">Címkék kezelése</string>
     <string name="tag_manage_add_hint">Új címke…</string>
     <string name="tag_manage_add">Hozzáadás</string>
+    <string name="tag_manage_empty">Még nincsenek címkék</string>
+    <string name="tag_manage_name_required">A címke neve nem lehet üres</string>
+    <string name="tag_manage_duplicate_name">Már létezik ilyen nevű címke</string>
+    <string name="tag_manage_deleted">Címke törölve</string>
+    <string name="tag_manage_undo">Visszavonás</string>
+
+    <!-- Planner -->
+    <string name="planner_load_archived">Elkészített menü betöltése</string>
 
     <!-- Menu History -->
     <string name="history_title">Előzmények</string>
     <string name="history_empty">Még nincs befejezett menü</string>
     <string name="history_rename_title">Menü átnevezése</string>
     <string name="history_rename_label">Menü címe</string>
+    <string name="history_meal_count">%d étel</string>
+    <string name="history_menu_details">Menü részletei</string>
+    <string name="history_loading">Betöltés…</string>
+    <string name="history_menu_not_found">A menü nem található</string>
+    <string name="history_load_blocked">Nem tölthető be: a jelenlegi menü összeállítása folyamatban van.</string>
+    <string name="history_load_into_planner">Betöltés a menübe</string>
+    <string name="history_loaded_into_planner">Ételek betöltve a menübe</string>
 
     <!-- Settings -->
     <string name="settings_title">Beállítások</string>
-    <string name="settings_cooldown">Ajánlási szünet (menük száma)</string>
-    <string name="settings_cooldown_description">Ennyi menünek kell elkészülnir, mielőtt egy étel újra ajánlható</string>
+    <string name="settings_cooldown">Ajánlási szünet</string>
+    <string name="settings_cooldown_description">Ennyi menünek kell elkészülnie, mielőtt egy étel újra ajánlható</string>
     <string name="settings_reset_cooldowns">Ajánlási szünetek törlése</string>
     <string name="settings_reset_cooldowns_confirm">Törlöd az ajánlási szüneteket?</string>
+    <string name="settings_reset_cooldowns_description">Az összes étel főzési előzményének törlése</string>
     <string name="settings_dark_theme">Sötét téma</string>
     <string name="settings_font_size">Betűméret</string>
     <string name="settings_font_size_small">Kicsi</string>
@@ -83,23 +118,35 @@
     <string name="settings_import">Importálás</string>
     <string name="settings_export">Exportálás</string>
     <string name="settings_import_success">Sikeresen importálva: %d étel</string>
-    <string name="settings_import_error">Hiba az importálás során</string>
     <string name="settings_export_success">Exportálás sikeres</string>
-    <string name="settings_export_error">Hiba az exportálás során</string>
     <string name="settings_accent_color">Akcentus szín</string>
+    <string name="settings_language">Nyelv</string>
+    <string name="settings_language_system">Rendszer</string>
+    <string name="settings_language_hungarian">Magyar</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_german">Deutsch</string>
+    <string name="settings_language_spanish">Español</string>
+
+    <!-- Color names -->
+    <string name="color_teal">Kékeszöld</string>
+    <string name="color_green">Zöld</string>
+    <string name="color_pink">Rózsaszín</string>
+    <string name="color_slate">Palaszürke</string>
+    <string name="color_sky">Égkék</string>
+    <string name="color_rose">Rózsapiros</string>
+    <string name="color_sand">Homok</string>
 
     <!-- General -->
     <string name="ok">OK</string>
     <string name="cancel">Mégse</string>
-    <string name="confirm">Megerősítés</string>
     <string name="yes">Igen</string>
-    <string name="no">Nem</string>
     <string name="delete">Törlés</string>
     <string name="save">Mentés</string>
+    <string name="back">Vissza</string>
 
-    <!-- Add to Plan (Task 8) -->
-    <string name="meal_add_to_plan">Tervhez adás</string>
-    <string name="meal_added_to_plan">Hozzáadva a heti tervhez</string>
-    <string name="meal_already_in_plan">Már hozzá van adva a heti tervhez</string>
+    <!-- Add to Plan -->
+    <string name="meal_add_to_plan">Menühöz adás</string>
+    <string name="meal_added_to_plan">Hozzáadva a menühöz</string>
+    <string name="meal_already_in_plan">Már hozzá van adva a menühöz</string>
     <string name="meal_plan_locked">A menü már elfogadásra került</string>
 </resources>
