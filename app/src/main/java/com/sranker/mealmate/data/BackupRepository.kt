@@ -21,11 +21,16 @@ data class BackupMeal(
 )
 
 /**
- * Serializable container for a collection of backup meals.
+ * Serializable container for a collection of backup meals and tags.
+ *
+ * @property version Schema version for forward-compatibility.
+ * @property tags All tags in the database (standalone, for preserving tag lists).
+ * @property meals The meals to backup.
  */
 @Serializable
 data class BackupData(
     val version: Int = 1,
+    val tags: List<String> = emptyList(),
     val meals: List<BackupMeal>
 )
 
@@ -53,7 +58,7 @@ class BackupRepository @Inject constructor(
     }
 
     /**
-     * Serializes all meals in the database to a JSON string.
+     * Serializes all meals and tags in the database to a JSON string.
      *
      * @return A pretty-printed JSON string representing all meals,
      *   ingredients, and tags.
@@ -80,15 +85,20 @@ class BackupRepository @Inject constructor(
             )
         }
 
-        return json.encodeToString(BackupData(meals = mealsSnapshot))
+        // Export all tags at the top level as well
+        val allTags = tagDao.getAllTagsOnce().map { it.name }
+
+        return json.encodeToString(BackupData(meals = mealsSnapshot, tags = allTags))
     }
 
     /**
-     * Imports meals from a JSON string.
+     * Imports meals and tags from a JSON string.
      *
      * Conflict resolution:
-     * - Meals with names that already exist (case-insensitive) are **skipped**.
-     * - New tags are created on the fly if they don't already exist.
+     * - Duplicate meal names are skipped (case-insensitive).
+     * - Duplicate tag names are skipped (case-insensitive).
+     * - New tags referenced by imported meals are created automatically.
+     * - Existing meals are never overwritten — only new meals are added.
      *
      * @param jsonString The JSON string produced by [exportToJson].
      * @return The number of meals successfully imported.
@@ -101,6 +111,27 @@ class BackupRepository @Inject constructor(
         // Local cache of tag name -> tag ID to avoid re-querying during import
         val tagCache = mutableMapOf<String, Long>()
 
+        // First pass: import standalone tags (top-level), skip duplicates
+        backup.tags.forEach { tagName ->
+            val trimmedName = tagName.trim()
+            if (trimmedName.isBlank()) return@forEach
+
+            // Skip if already cached from a previous tag in this import
+            val cacheKey = trimmedName.lowercase()
+            if (cacheKey in tagCache) return@forEach
+
+            // Skip if already exists in database
+            val existing = tagDao.getTagByNameIgnoreCase(trimmedName)
+            if (existing != null) {
+                tagCache[cacheKey] = existing.id
+            } else {
+                // Create new tag
+                val newId = tagDao.insert(TagEntity(name = trimmedName))
+                tagCache[cacheKey] = newId
+            }
+        }
+
+        // Second pass: import meals
         backup.meals.forEach { backupMeal ->
             if (backupMeal.name.lowercase() in existingNames) {
                 // Skip duplicate
@@ -113,17 +144,18 @@ class BackupRepository @Inject constructor(
                 if (trimmedName.isBlank()) return@mapNotNull null
 
                 // Check local cache first
-                tagCache[trimmedName.lowercase()]?.let { return@mapNotNull it }
+                val cacheKey = trimmedName.lowercase()
+                tagCache[cacheKey]?.let { return@mapNotNull it }
 
                 // Check database (case-insensitive)
                 val existing = tagDao.getTagByNameIgnoreCase(trimmedName)
                 if (existing != null) {
-                    tagCache[trimmedName.lowercase()] = existing.id
+                    tagCache[cacheKey] = existing.id
                     existing.id
                 } else {
                     // Create new tag
                     val newId = tagDao.insert(TagEntity(name = trimmedName))
-                    tagCache[trimmedName.lowercase()] = newId
+                    tagCache[cacheKey] = newId
                     newId
                 }
             }
